@@ -1,0 +1,37 @@
+{
+    "name": "akshay/bulkexportcsv",
+    "description": "Export unlimited records into CSV",
+    "keywords": ["laravel", "export", "csv", "exportCSV", "bulk", "job", "queue", "akshay"],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "",
+    "authors": [
+        {
+            "name": "Akshay Gadekar",
+            "email": "akgadekar03@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "anourvalar/eloquent-serialize": "^1.2",
+        "laravel/framework": ">=8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.25"
+    },
+    "autoload": {
+        "psr-4": {
+            "Akshay\\BulkExportCSV\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Akshay\\BulkExportCSV\\ServiceProvider"
+            ],
+            "aliases": {
+                "BulkExportCSV": "Akshay\\BulkExportCSV\\Facades\\BulkExport"
+            }
+        }
+    }
+}

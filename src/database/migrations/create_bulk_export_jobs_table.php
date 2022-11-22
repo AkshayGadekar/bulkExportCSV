@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateBulkExportJobsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::connection(config('bulkexportcsv.db_connection'))->create('bulk_export_csv', function (Blueprint $table) {
+            $table->id();
+            $table->string('jobs_id')->unique();
+            $table->string('csv_name')->nullable();
+            $table->integer('total_records');
+            $table->integer('total_jobs');
+            $table->integer('completed_jobs')->default('0');
+            $table->enum('export_status', ['InProgress', 'Completed', 'Error'])->default('InProgress');
+            $table->text('each_jobs_time')->nullable();
+            $table->float('average_jobs_time')->nullable();
+            //$table->text('each_jobs_error')->nullable();
+            $table->string('error')->nullable();
+            $table->text('config')->nullable();
+            $table->string('batch_id')->unique()->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('bulk_export_jobs');
+    }
+}

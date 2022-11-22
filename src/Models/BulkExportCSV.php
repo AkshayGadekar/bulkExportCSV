@@ -1,0 +1,49 @@
+<?php
+
+namespace Akshay\BulkExportCSV\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class BulkExportCSV extends Model
+{
+    use HasFactory;
+    
+    public function __construct(array $attributes = []){
+        $this->connection = config('bulkexportcsv.db_connection');
+        parent::__construct($attributes);
+    }
+    
+    protected $table = "bulk_export_csv";
+
+    protected $guarded = [];
+
+    public function getEachJobsTimeAttribute($value) {
+        return $value ? unserialize($value) : [];
+    }
+
+    public function setEachJobsTimeAttribute($value) {
+        $this->attributes['each_jobs_time'] = serialize($value);
+    }
+
+    public function setErrorAttribute($value) {
+        $this->attributes['error'] = substr($value, 0, 250);
+    }
+
+    public function getConfigAttribute($value) {
+        return $value ? unserialize($value) : null;
+    }
+
+    public function setConfigAttribute($value) {
+        $this->attributes['config'] = serialize($value);
+    }
+
+    public function getEachJobsErrorAttribute($value) {
+        return $value ? unserialize($value) : [];
+    }
+
+    public function setEachJobsErrorAttribute($value) {
+        $this->attributes['each_jobs_error'] = serialize($value);
+    }
+
+}
