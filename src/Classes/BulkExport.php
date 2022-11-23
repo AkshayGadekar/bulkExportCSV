@@ -12,8 +12,8 @@ class BulkExport
 {
     use Helpers;
 
-    public static function build($query, $resource_namespace, $columns=[]){
-        return (new self())->bulkExportCSV($query, $resource_namespace, $columns=[]);
+    public static function create($query, $resource_namespace, $columns=[]){
+        return (new self())->build($query, $resource_namespace, $columns=[]);
     }
     /**
      * Display a listing of the resource.
@@ -21,7 +21,7 @@ class BulkExport
      * @return \Illuminate\Http\Response
      */
 
-    public function bulkExportCSV($query, $resource_namespace, $columns=[])
+    public function build($query, $resource_namespace, $columns=[])
     {   
 
         $db_connection = $this->getDBConnection();

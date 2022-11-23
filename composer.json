@@ -1,7 +1,7 @@
 {
     "name": "akki/bulkexportcsv",
     "description": "Export unlimited records into CSV",
-    "keywords": ["laravel", "export", "csv", "exportCSV", "bulk", "job", "queue", "akshay"],
+    "keywords": ["laravel", "export", "csv", "exportCSV", "bulk", "job", "queue", "akshay", "akki"],
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/AkshayGadekar/bulkExportCSV",
