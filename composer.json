@@ -4,7 +4,7 @@
     "keywords": ["laravel", "export", "csv", "exportCSV", "bulk", "job", "queue", "akshay"],
     "type": "library",
     "license": "MIT",
-    "homepage": "",
+    "homepage": "https://github.com/AkshayGadekar/bulkExportCSV",
     "authors": [
         {
             "name": "Akshay Gadekar",
@@ -17,7 +17,7 @@
         "laravel/framework": ">=8.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.25"
+        
     },
     "autoload": {
         "psr-4": {
