@@ -1,5 +1,5 @@
 {
-    "name": "akshay/bulkexportcsv",
+    "name": "akki/bulkexportcsv",
     "description": "Export unlimited records into CSV",
     "keywords": ["laravel", "export", "csv", "exportCSV", "bulk", "job", "queue", "akshay"],
     "type": "library",
