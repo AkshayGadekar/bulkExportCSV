@@ -17,6 +17,8 @@ class ServiceProvider extends SupportServiceProvider
             __DIR__.'/database/migrations/create_bulk_export_csv_table.php.stub' =>
             $this->getMigrationFileName("create_bulk_export_csv_table.php")
         ], 'migrations');
+
+        //$this->loadMigrationsFrom(__DIR__.'/database/migrations');
     }
 
     public function register()
