@@ -14,7 +14,7 @@
     ],
     "require": {
         "anourvalar/eloquent-serialize": "^1.2",
-        "laravel/framework": ">=8.0"
+        "php": "^7.3|^8.0"
     },
     "require-dev": {
         
