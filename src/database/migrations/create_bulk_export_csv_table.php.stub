@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateBulkExportJobsTable extends Migration
+class CreateBulkExportCSVTable extends Migration
 {
     /**
      * Run the migrations.
@@ -38,6 +38,6 @@ class CreateBulkExportJobsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('bulk_export_jobs');
+        Schema::dropIfExists('bulk_export_csv');
     }
 }
