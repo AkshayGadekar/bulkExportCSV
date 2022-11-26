@@ -14,7 +14,7 @@ class ServiceProvider extends SupportServiceProvider
         ], 'config');
         
         $this->publishes([
-            __DIR__.'/database/migrations/create_bulk_export_csv_table.php.stub' =>
+            __DIR__.'/database/migrations/create_bulk_export_csv_table.txt' =>
             $this->getMigrationFileName("create_bulk_export_csv_table.php")
         ], 'migrations');
 
@@ -30,7 +30,7 @@ class ServiceProvider extends SupportServiceProvider
 
     protected function getMigrationFileName($migrationFileName)
     {
-        $timestamp = date("Y-m-d_His");
+        $timestamp = date("Y_m_d_His");
         return database_path("migrations/{$timestamp}_{$migrationFileName}");
     }
     
