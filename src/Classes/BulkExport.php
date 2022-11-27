@@ -12,8 +12,8 @@ class BulkExport
 {
     use Helpers;
 
-    public static function create($query, $resource_namespace, $columns=[]){
-        return (new self())->build($query, $resource_namespace, $columns=[]);
+    public static function create($query, $resource_namespace, $columns=[], $data=null){
+        return (new self())->build($query, $resource_namespace, $columns=[], $data=null);
     }
     /**
      * Display a listing of the resource.
@@ -21,12 +21,12 @@ class BulkExport
      * @return \Illuminate\Http\Response
      */
 
-    public function build($query, $resource_namespace, $columns=[])
+    public function build($query, $resource_namespace, $columns=[], $data=null)
     {   
 
         $db_connection = $this->getDBConnection();
         
-        $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace);
+        $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace, $data);
 
         $config = $this->getCongifObj();
         
@@ -47,7 +47,7 @@ class BulkExport
         foreach ($no_of_jobs as $key => $value) {
             $jobConfig = clone $config;
             $jobConfig->this_job_no = $key;
-            $jobs[] = new MakeCSV($query, $resource_namespace, $columns, $jobConfig);
+            $jobs[] = new MakeCSV($query, $resource_namespace, $columns, $jobConfig, $data);
         }
         
         //Bus::chain($jobs)->onConnection($config->queue_connection)->onQueue($config->queue)->dispatch();

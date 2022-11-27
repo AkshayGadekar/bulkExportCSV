@@ -34,9 +34,6 @@ trait Helpers {
     }
 
     public function serializeEloquent($query) {
-        if (!($query instanceof EloquentBuilder)) {
-            throw new Exception("Query must be an eloquent query.", 422);
-        }
         return EloquentSerialize::serialize($query);
     }
 
@@ -100,7 +97,9 @@ trait Helpers {
         return $db_connection;
     }
 
-    public function getColumns($query, $resource_namespace) {
+    public function getColumns($query, $resource_namespace, $data) {
+        config(['bulkexportcsv.data' => $data]);
+        
         $firstRecord = $query->first();
         $columns_keys = array_keys(json_decode((new $resource_namespace($firstRecord))->toJson(), true));
         $columns = array_map(function($column){

@@ -16,19 +16,20 @@ class MakeCSV implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Helpers;
 
-    public $query, $resource_namespace, $columns, $config, $this_job_no, $bulkExportModal;
+    public $query, $resource_namespace, $columns, $config, $data, $this_job_no, $bulkExportModal;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($query, $resource_namespace, $columns, $config)
+    public function __construct($query, $resource_namespace, $columns, $config, $data)
     {
         $this->query = $query;
         $this->resource_namespace = $resource_namespace;
         $this->columns = $columns;
         $this->config = $config;
+        $this->data = $data;
 
         if ($config->job_timeout) {
             $this->timeout = $config->job_timeout;
@@ -97,6 +98,7 @@ class MakeCSV implements ShouldQueue
         $resource = $this->resource_namespace;
         $columns = $this->columns;
         
+        config(['bulkexportcsv.data' => $this->data]);
         $data = $this->mapDataToResource($data, $resource);
         
         $csv_name = $this->bulkExportModal->csv_name;
