@@ -26,9 +26,9 @@ class BulkExport
 
         $db_connection = $this->getDBConnection();
         
-        $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace, $data);
-
         $config = $this->getCongifObj();
+        
+        $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace, $data);
         
         $records_count = $this->getCount($query);
         $records_per_job = $config->records_per_job;
