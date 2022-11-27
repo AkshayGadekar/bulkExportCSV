@@ -1,6 +1,7 @@
 <?php
 
-namespace Akshay\BulkExportCSV\Models;
+//namespace Akshay\BulkExportCSV\Models;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
