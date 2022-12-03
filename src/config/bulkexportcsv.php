@@ -12,11 +12,11 @@ return [
     //The pcntl PHP extension must be installed in order to specify job timeouts.
     'delete_csv_if_job_failed' => false,
     'call_on_csv_success' => [
-        'namespace' => 'App\Http\Controllers\GetCSVController', 
-        'method' => 'getcsv'
+        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
+        'method' => 'getCSV'
     ],
     'call_on_csv_failure' => [
-        'namespace' => 'App\Http\Controllers\GetCSVController', 
-        'method' => 'errorcsv'
+        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
+        'method' => 'errorCSV'
     ]
 ];

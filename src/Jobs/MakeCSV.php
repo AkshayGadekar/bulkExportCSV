@@ -50,6 +50,8 @@ class MakeCSV implements ShouldQueue
         //try {
             $start_time = strtotime("now");
 
+            config(['bulkexportcsv.data' => $this->data]);
+
             $query = $this->unserializeEloquent($this->query);
             $resource_namespace = $this->resource_namespace;
             $columns = $this->columns;
@@ -98,7 +100,6 @@ class MakeCSV implements ShouldQueue
         $resource = $this->resource_namespace;
         $columns = $this->columns;
         
-        config(['bulkexportcsv.data' => $this->data]);
         $data = $this->mapDataToResource($data, $resource);
         
         $csv_name = $this->bulkExportModal->csv_name;
