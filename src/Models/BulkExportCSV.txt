@@ -1,8 +1,10 @@
 <?php
 
-namespace Akshay\BulkExportCSV\Models;
+//namespace Akshay\BulkExportCSV\Models;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+//use Jenssegers\Mongodb\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class BulkExportCSV extends Model

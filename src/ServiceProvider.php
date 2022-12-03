@@ -18,6 +18,11 @@ class ServiceProvider extends SupportServiceProvider
             $this->getMigrationFileName("create_bulk_export_csv_table.php")
         ], 'migrations');
 
+        $this->publishes([
+            __DIR__.'/Models/BulkExportCSV.txt' =>
+            app_path('Models/BulkExportCSV.php')
+        ], 'models');
+
         //$this->loadMigrationsFrom(__DIR__.'/database/migrations');
     }
 
