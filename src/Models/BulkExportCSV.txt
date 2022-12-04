@@ -20,6 +20,10 @@ class BulkExportCSV extends Model
 
     protected $guarded = [];
 
+    /**
+        Do not touch below methods, package uses them
+    */
+
     public function getEachJobsTimeAttribute($value) {
         return $value ? unserialize($value) : [];
     }
