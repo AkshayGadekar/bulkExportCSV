@@ -34,6 +34,7 @@ php artisan migrate
 ## Usage
 
 ### Make a query
+Prepare an eloquent query, make sure query does not have get(), first(), skip(), limit() methods. 
 ```php
 $query = \App\Models\User::query();
 $query->with('serviceProvider')->where('country', 'IN');
@@ -46,15 +47,16 @@ UserResource.php:
 public function toArray($request)
 {
     return [
-        'Name' => $this->name,
-        'Email' => $this->email,
-        'Service Provider' => $this->serviceProvider->org_name,
-        'Contact Number' => $this->contact_number,
+        'name' => $this->name,
+        'email' => $this->email,
+        'service_provider' => $this->serviceProvider->org_name,
+        'contact_number' => $this->contact_number,
     ];
 }
 ```
 
 ### Export into CSV
+Before this Make sure to fill up `config/bulkexportcsv.php` correctly
 ```php
 use BulkExportCSV;
 
@@ -65,308 +67,157 @@ $resource_namespace = 'App\Http\Resources\UserResource';
 
 $bulkExportCSV = BulkExportCSV::build($query, $resource_namespace);
 ```
+`build` method returns `Illuminate\Bus\Batch` instance of job batching, one can [Inspect Batch](https://laravel.com/docs/8.x/queues#inspecting-batches).
+Also, package gives bulk export configuration used for export CSV by accessing `bulkExportConfig` on batch instance i.e. `$bulkExportCSV->bulkExportConfig` 
 
-### Unserialize
-```php
-$builder = \EloquentSerialize::unserialize($package);
-
-foreach ($builder->get() as $item) {
-    // ...
-}
-```
-
-### Modify the bootstrap flow
-
-We need to enable both **Laravel Passport** provider and **Lumen Passport** specific provider:
+### Configuration
+Edit `config/bulkexportcsv.php` to suit your needs.
 
 ```php
-/** @file bootstrap/app.php */
-
-// Enable Facades
-$app->withFacades();
-
-// Enable Eloquent
-$app->withEloquent();
-
-// Enable auth middleware (shipped with Lumen)
-$app->routeMiddleware([
-    'auth' => App\Http\Middleware\Authenticate::class,
-]);
-
-// Register two service providers, Laravel Passport and Lumen adapter
-$app->register(Laravel\Passport\PassportServiceProvider::class);
-$app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
-```
-
-### Laravel Passport ^7.3.2 and newer
-
-On 30 Jul 2019 [Laravel Passport 7.3.2](https://github.com/laravel/passport/releases/tag/v7.3.2) had a breaking change - new method introduced on Application class that exists in Laravel but not in Lumen. You could either lock in to an older version or swap the Application class like follows:
-
-```php
-/** @file bootstrap/app.php */
-
-//$app = new Laravel\Lumen\Application(
-//    dirname(__DIR__)
-//);
-$app = new \Dusterio\LumenPassport\Lumen7Application(
-    dirname(__DIR__)
-);
-```
-
-\* _Note: If you look inside this class - all it does is adding an extra method `configurationIsCached()` that always returns `false`._
-
-### Migrate and install Laravel Passport
-
-```bash
-# Create new tables for Passport
-php artisan migrate
-
-# Install encryption keys and other stuff for Passport
-php artisan passport:install
-```
-
-It will output the Personal access client ID and secret, and the Password grand client ID and secret.
-
-\* _Note: Save the secrets in a safe place, you'll need them later to request the access tokens._
-
-## Configuration
-
-### Configure Authentication
-
-Edit `config/auth.php` to suit your needs. A simple example:
-
-```php
-/** @file config/auth.php */
+/** @file config/bulkexportcsv.php */
 
 return [
+    /*
+    * Number of Records to be fetched per job
+    */
+    'records_per_job' => 500,
 
-    'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => \App\Models\User::class
-        ]
+    /*
+    * records will be fetched in chunks for better performance
+    */
+    'chunks_of_records_per_job' => 1,
+
+    /*
+    * Directory where CSV will be prepared inside storage folder   
+    */
+    'dir' => 'exportCSV',
+
+    /*
+    * When CSV gets prepared successfully, mention the method to call
+    * method will receive bulkExport configuration used at the time of export as parameter
+    */
+    'call_on_csv_success' => [
+        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
+        'method' => 'getCSV'
+    ],
+    
+    /*
+    * When CSV gets failed i.e. if any job fails, mention the method to call
+    * method will receive bulkExport configuration used at the time of export as parameter   
+    */
+    'call_on_csv_failure' => [
+        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
+        'method' => 'errorCSV'
     ],
 
+    /*
+    * Database connection for bulk_export_csv table  
+    */
+    'db_connection' => env('DB_CONNECTION', 'mysql'),
+
+    /*
+    * Queue connection for jobs  
+    */
+    'queue_connection' => env('QUEUE_CONNECTION', 'sync'),
+
+    /*
+    * Name of queue where job will be dispatched  
+    */
+    'queue' => 'default',
+
+    /*
+    * Name of queue job batch   
+    */
+    'batch_name' => 'Bulk Export CSV',
+
+    /*
+    * The number of seconds the job can run before timing out
+    * null takes default value
+    * The pcntl PHP extension must be installed in order to specify job timeouts   
+    */
+    'job_timeout' => null,
+
+    /*
+    * if any job fails, it stops CSV preparation process
+    * Decide whether partial CSV prepared should get deleted or not   
+    */
+    'delete_csv_if_job_failed' => false
 ];
 ```
 
-\* _Note: Lumen 7.x and older uses `\App\User::class`_
-
-Load the config since Lumen doesn't load config files automatically:
-
+### Method to call on CSV success or failure 
+From `config/bulkexportcsv.php`, methods mentioned at 'call_on_csv_success' and 'call_on_csv_failure' will be called. Methods will receive bulk export configuration as parameter. 
 ```php
-/** @file bootstrap/app.php */
-
-$app->configure('auth');
-```
-
-### Registering Routes
-
-Next, you should call the `LumenPassport::routes` method within the `boot` method of your application (one of your service providers). This method will register the routes necessary to issue access tokens and revoke access tokens, clients, and personal access tokens:
-
-```php
-/** @file app/Providers/AuthServiceProvider.php */
-
-use Dusterio\LumenPassport\LumenPassport;
-
-class AuthServiceProvider extends ServiceProvider
-{
-    public function boot()
+class BulkExportCSVController extends Controller
+{   
+    public function getCSV($bulkExportConfig)
     {
-        LumenPassport::routes($this->app);
-
-        /* rest of boot */
+        $csv_path = $bulkExportConfig->csv_path;
+        ................
     }
-}
-```
 
-### User model
-
-Make sure your user model uses **Laravel Passport**'s `HasApiTokens` trait.
-
-```php
-/** @file app/Models/User.php */
-
-use Laravel\Passport\HasApiTokens;
-
-class User extends Model implements AuthenticatableContract, AuthorizableContract
-{
-    use HasApiTokens, Authenticatable, Authorizable, HasFactory;
-
-    /* rest of the model */
-}
-```
-
-## Usage
-
-You'll find all the documentation in [Laravel Passport Docs](https://laravel.com/docs/master/passport).
-
-### Curl example with username and password authentication
-
-First you have to [issue an access token](https://laravel.com/docs/master/passport#issuing-access-tokens) and then you can use it to authenticate your requests.
-
-```bash
-# Request
-curl --location --request POST '{{APP_URL}}/oauth/token' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "grant_type": "password",
-    "client_id": "{{CLIENT_ID}}",
-    "client_secret": "{{CLIENT_SECRET}}",
-    "username": "{{USER_EMAIL}}",
-    "password": "{{USER_PASSWORD}}",
-    "scope": "*"
-}'
-```
-
-```json
-{
-    "token_type": "Bearer",
-    "expires_in": 31536000,
-    "access_token": "******",
-    "refresh_token": "******"
-}
-```
-
-And with the `access_token` you can request access to the routes that uses the Auth:Api Middleware provided by the **Lumen Passport**.
-
-```php
-/** @file routes/web.php */
-
-$router->get('/ping', ['middleware' => 'auth', fn () => 'pong']);
-```
-
-```bash
-# Request
-curl --location --request GET '{{APP_URL}}/ping' \
---header 'Authorization: Bearer {{ACCESS_TOKEN}}'
-```
-
-```html
-pong
-```
-
-### Installed routes
-
-This package mounts the following routes after you call `routes()` method, all of them belongs to the namespace `\Laravel\Passport\Http\Controllers`:
-
-Verb | Path | Controller | Action | Middleware
---- | --- | --- | --- | ---
-POST   | /oauth/token                             | AccessTokenController           | issueToken | -
-GET    | /oauth/tokens                            | AuthorizedAccessTokenController | forUser    | auth
-DELETE | /oauth/tokens/{token_id}                 | AuthorizedAccessTokenController | destroy    | auth
-POST   | /oauth/token/refresh                     | TransientTokenController        | refresh    | auth
-GET    | /oauth/clients                           | ClientController                | forUser    | auth
-POST   | /oauth/clients                           | ClientController                | store      | auth
-PUT    | /oauth/clients/{client_id}               | ClientController                | update     | auth
-DELETE | /oauth/clients/{client_id}               | ClientController                | destroy    | auth
-GET    | /oauth/scopes                            | ScopeController                 | all        | auth
-GET    | /oauth/personal-access-tokens            | PersonalAccessTokenController   | forUser    | auth
-POST   | /oauth/personal-access-tokens            | PersonalAccessTokenController   | store      | auth
-DELETE | /oauth/personal-access-tokens/{token_id} | PersonalAccessTokenController   | destroy    | auth
-
-\* _Note: some of the **Laravel Passport**'s routes had to 'go away' because they are web-related and rely on sessions (eg. authorise pages). Lumen is an API framework so only API-related routes are present._
-
-## Extra features
-
-There are a couple of extra features that aren't present in **Laravel Passport**
-
-### Prefixing Routes
-
-You can add that into an existing group, or add use this route registrar independently like so;
-
-```php
-/** @file app/Providers/AuthServiceProvider.php */
-
-use Dusterio\LumenPassport\LumenPassport;
-
-class AuthServiceProvider extends ServiceProvider
-{
-    public function boot()
+    public function errorCSV($bulkExportConfig)
     {
-        LumenPassport::routes($this->app, ['prefix' => 'v1/oauth']);
-
-        /* rest of boot */
+        $csv_path = $bulkExportConfig->csv_path; //CSV may not exist if ''delete_csv_if_job_failed' mention in configuration is true
+        $error = \App\Models\BulkExportCSV::where('jobs_id', $bulkExportConfig->jobs_id)->first()->error;
+        //If job was failed, error will be "Jobs Exception: ......."
+        //If this method itself thrown an exception error will be "Method Exception: ......."
+        ................
     }
+
 }
 ```
+`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for export), records_count (total records exported), batch_id (batch_id of job process), csv_path (path of CSV). One can then take CSV and upload it to s3 or email it to user as per requirement. If one wants access particular 
 
-### Multiple tokens per client
+### bulk_export_csv table 
+When CSV gets prepared, you can access its process using "job_batches" table, but package also ships with its own table "bulk_export_csv" which has following columns:
+jobs_id => when job batching starts, every export has unique ID
+csv_name => CSV file name
+total_records => total records exported
+total_jobs => total jobs required to export CSV
+completed_jobs => when export CSV starts, this column gets updated with number of completed jobs
+export_status => export status of CSV as 'InProgress', 'Completed' or 'Error'
+each_jobs_time => time of each job processes
+average_jobs_time => average time all jobs taken
+error => Exception error if any job fails or 'call_on_csv_success', 'call_on_csv_failure' methods throws exception
+config => bulk export configuration used for this particular export
+batch_id => batch_id of job process
 
-Sometimes it's handy to allow multiple access tokens per password grant client. Eg. user logs in from several browsers
-simultaneously. Currently **Laravel Passport** does not allow that.
 
+### More Options in 'build' method of 'BulkExportCSV' 
+## Define Columns for Export CSV
+By default, package takes columns names from resource itself. But one can define custom columns as required:
 ```php
-/** @file app/Providers/AuthServiceProvider.php */
-
-use Dusterio\LumenPassport\LumenPassport;
-
-class AuthServiceProvider extends ServiceProvider
-{
-    public function boot()
-    {
-        LumenPassport::routes($this->app);
-        LumenPassport::allowMultipleTokens();
-
-        /* rest of boot */
-    }
-}
+$columns = ['Name', 'Email', 'Service Provider', 'Contact Number'];
+$bulkExportCSV = BulkExportCSV::build($query, $resource_namespace, $columns);
 ```
 
-### Different TTLs for different password clients
-
-**Laravel Passport** allows to set one global TTL (time to live) for access tokens, but it may be useful sometimes to set different TTLs for different clients (eg. mobile users get more time than desktop users).
-
-Simply do the following in your service provider:
-
+## Access Request Data in Resource
+Often times, we need authenticated user data or request data in resource. As export CSV happens in background, there is no access to request, but one can send data to resource or even eloquent model accessors or in `call_on_csv_success`, `call_on_csv_failure` methods by using `config('bulkexportcsv.data')` this way:
 ```php
-/** @file app/Providers/AuthServiceProvider.php */
-
-use Carbon\Carbon;
-use Dusterio\LumenPassport\LumenPassport;
-
-class AuthServiceProvider extends ServiceProvider
+$user = auth()->user();
+$data = ['user' => $user, 'request' => $request->all()];
+$columns = []; //if columns are defined as empty, then columns will be taken from resource itself
+$bulkExportCSV = BulkExportCSV::build($query, $resource_namespace, $columns, $data);
+```
+Resource:
+```php
+public function toArray($request)
 {
-    public function boot()
-    {
-        LumenPassport::routes($this->app);
-        $client_id = '1';
-        LumenPassport::tokensExpireIn(Carbon::now()->addDays(14), $client_id); 
+    $data = config('bulkexportcsv.data');
+    $user = $data['user'];
+    $request = $data['request'];
 
-        /* rest of boot */
-    }
+    return [
+        'name' => $this->name,
+        'email' => $this->email,
+        'service_provider' => $this->when($user->role == 'admin', $this->serviceProvider->org_name??"-"),
+        'contact_number' => $request['contact_number'],
+    ];
 }
 ```
+Make sure to restart queue workers, if one does changes in resource.
 
-If you don't specify client Id, it will simply fall back to Laravel Passport implementation.
+### Contribution
 
-### Purge expired tokens
-
-```bash
-php artisan passport:purge
-```
-
-Simply run it to remove expired refresh tokens and their corresponding access tokens from the database.
-
-## Error and issue resolution
-
-Instead of opening a new issue, please see if someone has already had it and it has been resolved.
-
-If you have found a bug or want to contribute to improving the package, please review the [Contributing guide](https://github.com/dusterio/lumen-passport/blob/master/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/dusterio/lumen-passport/blob/master/CODE_OF_CONDUCT.md).
-
-## Video tutorials
-
-I've just started a educational YouTube channel [config.sys](https://www.youtube.com/channel/UCIvUJ1iVRjJP_xL0CD7cMpg) that will cover top IT trends in software development and DevOps.
-
-Also I'm happy to announce my newest tool – [GrammarCI](https://www.grammarci.com/), an automated (as a part of CI/CD process) spelling and grammar checks for your code so that your users don't see your typos :)
-
-## License
-
-The MIT License (MIT)
-Copyright (c) 2016 Denis Mysenko
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+You can contribute to this package by discovering bugs and opening issues. Please, add to which version of package you create pull request or issue. (e.g. [1.0.0] Fatal error on delayed job)
