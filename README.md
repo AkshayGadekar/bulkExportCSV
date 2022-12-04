@@ -60,14 +60,12 @@ public function toArray($request)
 ### Export into CSV
 Before this Make sure to fill up `config/bulkexportcsv.php` correctly. This will start the export CSV process. 
 ```php
-use BulkExportCSV;
-
 $query = \App\Models\User::query();
 $query->with('serviceProvider')->where('country', 'IN');
 
 $resource_namespace = 'App\Http\Resources\UserResource';
 
-$bulkExportCSV = BulkExportCSV::build($query, $resource_namespace);
+$bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace);
 ```
 `build` method returns `Illuminate\Bus\Batch` instance of job batching, one can [Inspect Batch](https://laravel.com/docs/8.x/queues#inspecting-batches).
 Also, package gives bulk export configuration used for export CSV by accessing `bulkExportConfig` on batch instance i.e. `$bulkExportCSV->bulkExportConfig` 
@@ -175,7 +173,7 @@ class BulkExportCSVController extends Controller
 When CSV gets prepared, you can access its process using "job_batches" table, but package also ships with its own table "bulk_export_csv" which has following columns:
 ```php
 [
-    'jobs_id' => unique ID for export
+    'jobs_id' => unique ID generated for export
     'csv_name' => CSV file name
     'total_records' => total records exported
     'total_jobs' => total jobs required to export CSV
