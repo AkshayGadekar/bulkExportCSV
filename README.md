@@ -1,5 +1,5 @@
 # Export Unlimited Records into CSV
-[![Latest Stable Version](https://img.shields.io/badge/stable-v1.0.0-blue)](https://github.com/AkshayGadekar/bulkExportCSV/tags)
+[(https://img.shields.io/badge/stable-v1.0.0-blue)]
 
 ## Introduction
 
