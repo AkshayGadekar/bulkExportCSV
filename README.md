@@ -252,7 +252,7 @@ if (!class_exists('EloquentSerialize')) {
 }
 ```
 
-If one gets error `'ReflectionException' with message 'Class path.storage does not exist'`
+If one gets error `'ReflectionException' with message 'Class path.storage does not exist'`,
 declare storage folder path in `bootstrap/app.php` right after `$app` definition:
 ```php
 $app = new Laravel\Lumen\Application(
@@ -262,7 +262,7 @@ $app = new Laravel\Lumen\Application(
 $app->instance('path.storage', app()->basePath() . DIRECTORY_SEPARATOR . 'storage');
 ```
 
-If one gets error `Target [Illuminate\Contracts\Routing\ResponseFactory] is not instantiable`
+If one gets error `Target [Illuminate\Contracts\Routing\ResponseFactory] is not instantiable`,
 add this in `AppServiceProvider.php`:
 ```php
 public function register()
@@ -278,7 +278,7 @@ Copy the required files:
 mkdir -p config
 cp vendor/akki/bulkexportcsv/src/config/bulkexportcsv.php config/bulkexportcsv.php
 cp vendor/akki/bulkexportcsv/src/Models/BulkExportCSV.txt app/Models/BulkExportCSV.php
-cp vendor/akki/bulkexportcsv/src/database/migrations/create_bulk_export_csv_table.txt database/migrations/create_bulk_export_csv_table.php
+cp vendor/akki/bulkexportcsv/src/database/migrations/create_bulk_export_csv_table.txt database/migrations/2023_01_01_000000_create_bulk_export_csv_table.php
 ```
 
 copy `queue:table`, `queue:batches-table` from laravel itself, migrate the tables:
