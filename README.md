@@ -252,17 +252,17 @@ if (!class_exists('EloquentSerialize')) {
 }
 ```
 
-If one gets error `'ReflectionException' with message 'Class path.storage does not exist'.`
-mention storage folder path in `bootstrap/app.php` right after `$app` definition:
+If one gets error `'ReflectionException' with message 'Class path.storage does not exist'`
+declare storage folder path in `bootstrap/app.php` right after `$app` definition:
 ```php
 $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
-// mention path to storage folder
+// declare path to storage folder
 $app->instance('path.storage', app()->basePath() . DIRECTORY_SEPARATOR . 'storage');
 ```
 
-If one gets error `Target [Illuminate\Contracts\Routing\ResponseFactory] is not instantiable.`
+If one gets error `Target [Illuminate\Contracts\Routing\ResponseFactory] is not instantiable`
 add this in `AppServiceProvider.php`:
 ```php
 public function register()
