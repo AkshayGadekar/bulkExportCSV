@@ -224,6 +224,62 @@ public function toArray($request)
 ```
 Make sure to restart queue workers, if one does changes in json resource.
 
+## Installation in LUMEN
+
+Install **BulkExportCSV**:
+
+```bash
+composer require akki/bulkexportcsv
+```
+
+Service provider should be registered manually as follow in `bootstrap/app.php` with enabling some additional required options:
+```php
+// regiser service provider
+$app->register(Akshay\BulkExportCSV\ServiceProvider::class);
+// Enable Facades
+$app->withFacades();
+// Enable Eloquent
+$app->withEloquent();
+// Enable bulk export configuration
+$app->configure('bulkexportcsv');
+// path to storage folder
+$app->instance('path.storage', app()->basePath() . DIRECTORY_SEPARATOR . 'storage');
+// BulkExportCSV class alias
+if (!class_exists('BulkExportCSV')) {
+    class_alias('Akshay\\BulkExportCSV\\Facades\\BulkExport', 'BulkExportCSV');
+}
+// EloquentSerialize class alias
+if (!class_exists('EloquentSerialize')) {
+    class_alias('AnourValar\EloquentSerialize\Facades\EloquentSerializeFacade', 'EloquentSerialize');
+}
+```
+
+If one gets error `Target [Illuminate\Contracts\Routing\ResponseFactory] is not instantiable.`
+add this in AppServiceProvider.php:
+```php
+public function register()
+{
+    $this->app->singleton(\Illuminate\Contracts\Routing\ResponseFactory::class, function() {
+        return new \Laravel\Lumen\Http\ResponseFactory();
+    });
+}
+```
+
+Copy the required files:
+```bash
+mkdir -p config
+cp vendor/akki/bulkexportcsv/src/config/bulkexportcsv.php config/bulkexportcsv.php
+cp vendor/akki/bulkexportcsv/src/Models/BulkExportCSV.txt app/Models/BulkExportCSV.php
+cp vendor/akki/bulkexportcsv/src/database/migrations/create_bulk_export_csv_table.txt database/migrations/create_bulk_export_csv_table.php
+```
+
+copy queue:table, queue:batches-table from laravel itself, migrate the tables:
+```bash
+php artisan migrate
+```
+
+Now you can follow the same [Usage](https://github.com/AkshayGadekar/bulkExportCSV#usage).
+
 ## Contribution
 
 You can contribute to this package by discovering bugs and opening issues. Please, add to which version of package you create pull request or issue. (e.g. [1.0.0] Fatal error on `build` method)
