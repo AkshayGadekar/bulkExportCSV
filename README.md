@@ -12,7 +12,7 @@ Install **BulkExportCSV**:
 composer require akki/bulkexportcsv
 ```
 
-Publish the config file(config/bulkexportcsv.php), model (BulkExportCSV.php) and migration(bulk_export_csv table):
+Publish the config file (config/bulkexportcsv.php), model (App\Models\BulkExportCSV.php) and migration (bulk_export_csv table):
 
 ```bash
 php artisan vendor:publish --provider="Akshay\BulkExportCSV\ServiceProvider"
@@ -34,16 +34,18 @@ php artisan migrate
 ## Usage
 
 ### Make a query
-Prepare an eloquent query, make sure query does not have get(), first(), skip(), limit() methods. 
+Prepare an eloquent query, make sure query does not have get(), first(), skip(), limit() methods. By Default package will export all records. 
 ```php
 $query = \App\Models\User::query();
 $query->with('serviceProvider')->where('country', 'IN');
 ```
 
 ### Make a JSON resource
-```php
+```bash
 php artisan make:resource UserResource
+```
 UserResource.php:
+```php
 public function toArray($request)
 {
     return [
@@ -56,7 +58,7 @@ public function toArray($request)
 ```
 
 ### Export into CSV
-Before this Make sure to fill up `config/bulkexportcsv.php` correctly
+Before this Make sure to fill up `config/bulkexportcsv.php` correctly. This will start the export CSV process. 
 ```php
 use BulkExportCSV;
 
@@ -126,7 +128,7 @@ return [
     'queue' => 'default',
 
     /*
-    * Name of queue job batch   
+    * Name of batch   
     */
     'batch_name' => 'Bulk Export CSV',
 
@@ -146,7 +148,7 @@ return [
 ```
 
 ### Method to call on CSV success or failure 
-From `config/bulkexportcsv.php`, methods mentioned at 'call_on_csv_success' and 'call_on_csv_failure' will be called. Methods will receive bulk export configuration as parameter. 
+From `config/bulkexportcsv.php`, methods mentioned at 'call_on_csv_success' and 'call_on_csv_failure' will be called. If CSV gets prepared successfully 'call_on_csv_success' method will be called, on failure 'call_on_csv_failure' will be called, Methods will receive bulk export configuration as only parameter. 
 ```php
 class BulkExportCSVController extends Controller
 {   
@@ -158,7 +160,7 @@ class BulkExportCSVController extends Controller
 
     public function errorCSV($bulkExportConfig)
     {
-        $csv_path = $bulkExportConfig->csv_path; //CSV may not exist if ''delete_csv_if_job_failed' mention in configuration is true
+        $csv_path = $bulkExportConfig->csv_path; //CSV may not exist if 'delete_csv_if_job_failed' mention in configuration is true
         $error = \App\Models\BulkExportCSV::where('jobs_id', $bulkExportConfig->jobs_id)->first()->error;
         //If job was failed, error will be "Jobs Exception: ......."
         //If this method itself thrown an exception error will be "Method Exception: ......."
@@ -167,40 +169,43 @@ class BulkExportCSVController extends Controller
 
 }
 ```
-`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for export), records_count (total records exported), batch_id (batch_id of job process), csv_path (path of CSV). One can then take CSV and upload it to s3 or email it to user as per requirement. If one wants access particular 
+`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for export), records_count (total records exported), batch_id (batch_id of job process), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
 
 ### bulk_export_csv table 
 When CSV gets prepared, you can access its process using "job_batches" table, but package also ships with its own table "bulk_export_csv" which has following columns:
-jobs_id => when job batching starts, every export has unique ID
-csv_name => CSV file name
-total_records => total records exported
-total_jobs => total jobs required to export CSV
-completed_jobs => when export CSV starts, this column gets updated with number of completed jobs
-export_status => export status of CSV as 'InProgress', 'Completed' or 'Error'
-each_jobs_time => time of each job processes
-average_jobs_time => average time all jobs taken
-error => Exception error if any job fails or 'call_on_csv_success', 'call_on_csv_failure' methods throws exception
-config => bulk export configuration used for this particular export
-batch_id => batch_id of job process
+```php
+[
+    'jobs_id' => unique ID for export
+    'csv_name' => CSV file name
+    'total_records' => total records exported
+    'total_jobs' => total jobs required to export CSV
+    'completed_jobs' => when export CSV starts, this column gets updated with number of completed jobs
+    'export_status' => export status of CSV as 'InProgress', 'Completed' or 'Error'
+    'each_jobs_time' => time taken by each job processed
+    'average_jobs_time' => average time all jobs taken
+    'error' => Exception error if any job fails or 'call_on_csv_success' or 'call_on_csv_failure' methods threw exception
+    'config' => bulk export configuration used for particular export
+    'batch_id' => batch_id of job process
+]
+```
 
-
-### More Options in 'build' method of 'BulkExportCSV' 
-## Define Columns for Export CSV
-By default, package takes columns names from resource itself. But one can define custom columns as required:
+## More Options in 'build' method of 'BulkExportCSV' 
+### Define Columns for Export CSV
+By default, package takes columns names from json resource itself. But one can define custom columns as required:
 ```php
 $columns = ['Name', 'Email', 'Service Provider', 'Contact Number'];
 $bulkExportCSV = BulkExportCSV::build($query, $resource_namespace, $columns);
 ```
 
-## Access Request Data in Resource
-Often times, we need authenticated user data or request data in resource. As export CSV happens in background, there is no access to request, but one can send data to resource or even eloquent model accessors or in `call_on_csv_success`, `call_on_csv_failure` methods by using `config('bulkexportcsv.data')` this way:
+### Access Request Data in Resource
+Often times, we need authenticated user data or request data in json resource. As export CSV happens in background, there is no access to request, but one can send data to json resource or even eloquent model accessors or in `call_on_csv_success`, `call_on_csv_failure` methods by using `config('bulkexportcsv.data')`:
 ```php
 $user = auth()->user();
 $data = ['user' => $user, 'request' => $request->all()];
-$columns = []; //if columns are defined as empty, then columns will be taken from resource itself
+$columns = []; //if columns are defined as empty, then columns will be taken from json resource itself
 $bulkExportCSV = BulkExportCSV::build($query, $resource_namespace, $columns, $data);
 ```
-Resource:
+JSON Resource:
 ```php
 public function toArray($request)
 {
@@ -216,8 +221,8 @@ public function toArray($request)
     ];
 }
 ```
-Make sure to restart queue workers, if one does changes in resource.
+Make sure to restart queue workers, if one does changes in json resource.
 
-### Contribution
+## Contribution
 
-You can contribute to this package by discovering bugs and opening issues. Please, add to which version of package you create pull request or issue. (e.g. [1.0.0] Fatal error on delayed job)
+You can contribute to this package by discovering bugs and opening issues. Please, add to which version of package you create pull request or issue. (e.g. [1.0.0] Fatal error on `build` method)
