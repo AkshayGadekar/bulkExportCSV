@@ -195,7 +195,7 @@ Make sure you have filled up `config/queue.php` correctly. Install [Supervisor](
 ```bash
 php artisan queue:work --queue=bulkExportCSV,default
 ```
-You can specify which queues queue worker should process by priority depending on your needs.
+Of course, You can specify which queues queue worker should process by priority depending on your needs.
 
 ## More Options in 'build' method of 'BulkExportCSV' 
 ### Define Columns for Export CSV
