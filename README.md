@@ -15,7 +15,7 @@ Install **BulkExportCSV**:
 composer require akki/bulkexportcsv
 ```
 
-Publish the config file (config/bulkexportcsv.php), model (App\Models\BulkExportCSV.php) and migration (bulk_export_csv table):
+Publish the config file `config/bulkexportcsv.php`, model `App\Models\BulkExportCSV.php` and migration `bulk_export_csv` table:
 
 ```bash
 php artisan vendor:publish --provider="Akshay\BulkExportCSV\ServiceProvider"
@@ -189,6 +189,13 @@ When CSV gets prepared, you can access its process using "job_batches" table, bu
     'batch_id' => batch_id of job process
 ]
 ```
+
+### Queue Configuration
+Make sure you have filled up `config/queue.php` correctly. Install [Supervisor](https://laravel.com/docs/8.x/queues#supervisor-configuration), in its configuration file, command must have queue name used for bulkExportCSV. For example, in `config/bulkexportcsv.php` if `queue_connection` used is `bulkExportCSV` then command must be:
+```bash
+php artisan queue:work --queue=bulkExportCSV,default
+```
+You can specify which queues queue worker should process by priority depending on your needs.
 
 ## More Options in 'build' method of 'BulkExportCSV' 
 ### Define Columns for Export CSV
