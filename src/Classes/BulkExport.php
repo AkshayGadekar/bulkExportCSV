@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Bus;
 class BulkExport
 {
     use Helpers;
-
-    public static function create($query, $resource_namespace, $columns=[], $data=null){
-        return (new self())->build($query, $resource_namespace, $columns=[], $data=null);
-    }
+    
     /**
      * Display a listing of the resource.
      *
