@@ -17,4 +17,16 @@ class BulkExportCSV extends Model
 
     protected $guarded = [];
 
+    public function handleCSV($bulkExportConfig)
+    {
+        $csv_path = $bulkExportConfig->csv_path;
+        # code...
+    }
+
+    public function handleFailedCSV($bulkExportConfig)
+    {
+        $error = self::where('jobs_id', $bulkExportConfig->jobs_id)->first()->error;
+        # code...
+    }
+
 }

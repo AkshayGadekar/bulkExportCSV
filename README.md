@@ -96,21 +96,23 @@ return [
     'dir' => 'exportCSV',
 
     /*
-    * When CSV gets prepared successfully, mention the method to call
-    * method will receive bulkExport configuration used at the time of export as parameter
+    * When CSV gets prepared successfully, mention the public method to call
+    * method will receive bulkExport configuration used at the time of export as a parameter
+    * Method given below is an examaple but it does exist at BulkExportCSV model
     */
     'call_on_csv_success' => [
-        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
-        'method' => 'getCSV'
+        'namespace' => 'App\Models\BulkExportCSV', 
+        'method' => 'handleCSV'
     ],
     
     /*
-    * When CSV gets failed i.e. if any job fails, mention the method to call
-    * method will receive bulkExport configuration used at the time of export as parameter   
+    * When CSV gets failed i.e. if any job fails, mention the public method to call
+    * method will receive bulkExport configuration used at the time of export as a parameter 
+    * Method given below is an examaple but it does exist at BulkExportCSV model
     */
     'call_on_csv_failure' => [
-        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
-        'method' => 'errorCSV'
+        'namespace' => 'App\Models\BulkExportCSV', 
+        'method' => 'handleFailedCSV'
     ],
 
     /*
@@ -151,15 +153,20 @@ return [
 ### Method to call on CSV success or failure 
 From `config/bulkexportcsv.php`, methods mentioned at 'call_on_csv_success' and 'call_on_csv_failure' will be called. If CSV gets prepared successfully 'call_on_csv_success' method will be called, on failure 'call_on_csv_failure' will be called, Methods will receive bulk export configuration as only parameter. 
 ```php
-class BulkExportCSVController extends Controller
+class BulkExportCSV extends Model
 {   
-    public function getCSV($bulkExportConfig)
+    
+    ................
+    ................
+
+
+    public function handleCSV($bulkExportConfig)
     {
         $csv_path = $bulkExportConfig->csv_path;
         ................
     }
 
-    public function errorCSV($bulkExportConfig)
+    public function handleFailedCSV($bulkExportConfig)
     {
         $csv_path = $bulkExportConfig->csv_path; //CSV may not exist if 'delete_csv_if_job_failed' mention in configuration is true
         $error = \App\Models\BulkExportCSV::where('jobs_id', $bulkExportConfig->jobs_id)->first()->error;
@@ -170,7 +177,7 @@ class BulkExportCSVController extends Controller
 
 }
 ```
-`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for export), records_count (total records exported), batch_id (batch_id of job process), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
+`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for an export request), records_count (total records exported), batch_id (batch_id of job process), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
 
 ### bulk_export_csv table 
 When CSV gets prepared, you can access its process using "job_batches" table, but package also ships with its own table "bulk_export_csv" which has following columns:
