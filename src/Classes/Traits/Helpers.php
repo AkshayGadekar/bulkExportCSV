@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use EloquentSerialize;
 //use Akshay\BulkExportCSV\Models\BulkExportCSV;
-use App\Models\BulkExportCSV;
+use Akshay\BulkExportCSV\Models\BulkExportCSVModel as BulkExportCSV;
 use Illuminate\Support\Str;
 use Throwable;
 use Exception;

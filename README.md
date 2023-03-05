@@ -71,7 +71,7 @@ $resource_namespace = 'App\Http\Resources\UserResource';
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace);
 ```
 `build` method returns `Illuminate\Bus\Batch` instance of job batching, one can [Inspect Batch](https://laravel.com/docs/8.x/queues#inspecting-batches).
-Also, package gives bulk export configuration used for export CSV by accessing `bulkExportConfig` on batch instance i.e. `$bulkExportCSV->bulkExportConfig`. But, Before this Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below. 
+Also, package gives bulk export configuration used for export CSV by accessing `bulkExportConfig` on batch instance i.e. `$bulkExportCSV->bulkExportConfig`. But, Before exporting into CSV, Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below. 
 
 ### Configuration
 Edit `config/bulkexportcsv.php` to suit your needs.

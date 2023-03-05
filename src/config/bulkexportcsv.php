@@ -17,7 +17,7 @@ return [
     'dir' => 'exportCSV',
 
     /*
-    * When CSV gets prepared successfully, mention the method to call
+    * When CSV gets prepared successfully, mention the public method to call
     * method will receive bulkExport configuration used at the time of export as parameter
     */
     'call_on_csv_success' => [
@@ -26,7 +26,7 @@ return [
     ],
     
     /*
-    * When CSV gets failed i.e. if any job fails, mention the method to call
+    * When CSV gets failed i.e. if any job fails, mention the public method to call
     * method will receive bulkExport configuration used at the time of export as parameter   
     */
     'call_on_csv_failure' => [
