@@ -188,7 +188,7 @@ When CSV gets prepared, you can access its process using "job_batches" table, bu
     'total_records' => total records exported
     'total_jobs' => total jobs required to export CSV
     'completed_jobs' => when export CSV starts, this column gets updated with number of completed jobs
-    'export_status' => export status of CSV as 'InProgress', 'Completed' or 'Error'
+    'export_status' => export status of CSV as 'InProgress', 'Completed', 'Error' or 'Cancelled'
     'each_jobs_time' => time taken by each job processed
     'average_jobs_time' => average time all jobs taken
     'error' => Exception error if any job fails or 'call_on_csv_success' or 'call_on_csv_failure' methods threw exception

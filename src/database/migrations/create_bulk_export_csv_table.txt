@@ -20,7 +20,7 @@ class CreateBulkExportCsvTable extends Migration
             $table->integer('total_records');
             $table->integer('total_jobs');
             $table->integer('completed_jobs')->default('0');
-            $table->enum('export_status', ['InProgress', 'Completed', 'Error'])->default('InProgress');
+            $table->enum('export_status', ['InProgress', 'Completed', 'Error', 'Cancelled'])->default('InProgress');
             $table->text('each_jobs_time')->nullable();
             $table->float('average_jobs_time')->nullable();
             //$table->text('each_jobs_error')->nullable();
