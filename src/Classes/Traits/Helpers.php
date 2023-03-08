@@ -1,13 +1,13 @@
 <?php
 
-namespace Akshay\BulkExportCSV\Classes\Traits;
+namespace Akki\BulkExportCSV\Classes\Traits;
 
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use EloquentSerialize;
-//use Akshay\BulkExportCSV\Models\BulkExportCSV;
-use Akshay\BulkExportCSV\Models\BulkExportCSVModel as BulkExportCSV;
+//use Akki\BulkExportCSV\Models\BulkExportCSV;
+use Akki\BulkExportCSV\Models\BulkExportCSVModel;
 use Illuminate\Support\Str;
 use Throwable;
 use Exception;
@@ -184,11 +184,11 @@ trait Helpers {
     }
 
     public function insertIntoBulkExportCSVTable($data) {
-        return BulkExportCSV::create($data);
+        return BulkExportCSVModel::create($data);
     }
 
     public function getBulkExportModal($jobs_id) {
-        $bulkExportModal = BulkExportCSV::where("jobs_id", $jobs_id)->first();
+        $bulkExportModal = BulkExportCSVModel::where("jobs_id", $jobs_id)->first();
         if (!$bulkExportModal) {
             throw new Exception("Record with jobs_id $jobs_id does not exist.", 404);
         }

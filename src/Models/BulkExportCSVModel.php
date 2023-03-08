@@ -1,6 +1,6 @@
 <?php
 
-namespace Akshay\BulkExportCSV\Models;
+namespace Akki\BulkExportCSV\Models;
 
 use App\Models\BulkExportCSV;
 

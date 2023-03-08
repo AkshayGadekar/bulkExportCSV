@@ -1,6 +1,6 @@
 <?php
 
-namespace Akshay\BulkExportCSV;
+namespace Akki\BulkExportCSV;
 
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Akshay\BulkExportCSV\Classes;
+namespace Akki\BulkExportCSV\Classes;
 
-use Akshay\BulkExportCSV\Classes\Traits\Helpers;
-use Akshay\BulkExportCSV\Jobs\MakeCSV;
+use Akki\BulkExportCSV\Classes\Traits\Helpers;
+use Akki\BulkExportCSV\Jobs\MakeCSV;
 use Throwable;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;

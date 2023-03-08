@@ -18,7 +18,7 @@ composer require akki/bulkexportcsv
 Publish the config file `config/bulkexportcsv.php`, model `App\Models\BulkExportCSV.php` and migration `bulk_export_csv` table:
 
 ```bash
-php artisan vendor:publish --provider="Akshay\BulkExportCSV\ServiceProvider"
+php artisan vendor:publish --provider="Akki\BulkExportCSV\ServiceProvider"
 ```
 
 Prepare Migration of queue tables:
@@ -249,7 +249,7 @@ composer require akki/bulkexportcsv
 Service provider should be registered manually as follow in `bootstrap/app.php` with enabling some additional required options:
 ```php
 // regiser service provider
-$app->register(Akshay\BulkExportCSV\ServiceProvider::class);
+$app->register(Akki\BulkExportCSV\ServiceProvider::class);
 // Enable Facades
 $app->withFacades();
 // Enable Eloquent
@@ -258,7 +258,7 @@ $app->withEloquent();
 $app->configure('bulkexportcsv');
 // BulkExportCSV class alias
 if (!class_exists('BulkExportCSV')) {
-    class_alias('Akshay\\BulkExportCSV\\Facades\\BulkExport', 'BulkExportCSV');
+    class_alias('Akki\\BulkExportCSV\\Facades\\BulkExport', 'BulkExportCSV');
 }
 // EloquentSerialize class alias
 if (!class_exists('EloquentSerialize')) {
