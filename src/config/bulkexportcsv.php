@@ -4,12 +4,12 @@ return [
     /*
     * Number of Records to be fetched per job
     */
-    'records_per_job' => 500,
+    'records_per_job' => 10000,
 
     /*
     * records will be fetched in chunks for better performance
     */
-    'chunks_of_records_per_job' => 1,
+    'chunks_of_records_per_job' => 2,
 
     /*
     * Directory where CSV will be prepared inside storage folder   
@@ -17,21 +17,23 @@ return [
     'dir' => 'exportCSV',
 
     /*
-    * When CSV gets prepared successfully, mention the method to call
-    * method will receive bulkExport configuration used at the time of export as parameter
+    * When CSV gets prepared successfully, mention the public method to call
+    * method will receive bulkExport configuration used at the time of export as a parameter
+    * Method given below is an examaple but it does exist at BulkExportCSV model
     */
     'call_on_csv_success' => [
-        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
-        'method' => 'getCSV'
+        'namespace' => 'App\Models\BulkExportCSV', 
+        'method' => 'handleCSV'
     ],
     
     /*
-    * When CSV gets failed i.e. if any job fails, mention the method to call
-    * method will receive bulkExport configuration used at the time of export as parameter   
+    * When CSV gets failed i.e. if any job fails, mention the public method to call
+    * method will receive bulkExport configuration used at the time of export as a parameter 
+    * Method given below is an examaple but it does exist at BulkExportCSV model
     */
     'call_on_csv_failure' => [
-        'namespace' => 'App\Http\Controllers\BulkExportCSVController', 
-        'method' => 'errorCSV'
+        'namespace' => 'App\Models\BulkExportCSV', 
+        'method' => 'handleFailedCSV'
     ],
 
     /*
@@ -42,7 +44,7 @@ return [
     /*
     * Queue connection for jobs  
     */
-    'queue_connection' => env('QUEUE_CONNECTION', 'sync'),
+    'queue_connection' => env('QUEUE_CONNECTION', 'database'),
 
     /*
     * Name of queue where job will be dispatched  

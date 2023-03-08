@@ -21,16 +21,16 @@
     },
     "autoload": {
         "psr-4": {
-            "Akshay\\BulkExportCSV\\": "src"
+            "Akki\\BulkExportCSV\\": "src"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Akshay\\BulkExportCSV\\ServiceProvider"
+                "Akki\\BulkExportCSV\\ServiceProvider"
             ],
             "aliases": {
-                "BulkExportCSV": "Akshay\\BulkExportCSV\\Facades\\BulkExport"
+                "BulkExportCSV": "Akki\\BulkExportCSV\\Facades\\BulkExport"
             }
         }
     }

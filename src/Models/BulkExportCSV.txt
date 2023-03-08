@@ -1,15 +1,12 @@
 <?php
 
-//namespace Akshay\BulkExportCSV\Models;
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 //use Jenssegers\Mongodb\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class BulkExportCSV extends Model
 {
-    use HasFactory;
     
     public function __construct(array $attributes = []){
         $this->connection = config('bulkexportcsv.db_connection');
@@ -20,36 +17,16 @@ class BulkExportCSV extends Model
 
     protected $guarded = [];
 
-    /**
-        Do not touch below methods, package uses them
-    */
-
-    public function getEachJobsTimeAttribute($value) {
-        return $value ? unserialize($value) : [];
+    public function handleCSV($bulkExportConfig)
+    {
+        $csv_path = $bulkExportConfig->csv_path;
+        # code...
     }
 
-    public function setEachJobsTimeAttribute($value) {
-        $this->attributes['each_jobs_time'] = serialize($value);
-    }
-
-    public function setErrorAttribute($value) {
-        $this->attributes['error'] = substr($value, 0, 250);
-    }
-
-    public function getConfigAttribute($value) {
-        return $value ? unserialize($value) : null;
-    }
-
-    public function setConfigAttribute($value) {
-        $this->attributes['config'] = serialize($value);
-    }
-
-    public function getEachJobsErrorAttribute($value) {
-        return $value ? unserialize($value) : [];
-    }
-
-    public function setEachJobsErrorAttribute($value) {
-        $this->attributes['each_jobs_error'] = serialize($value);
+    public function handleFailedCSV($bulkExportConfig)
+    {
+        $error = self::where('jobs_id', $bulkExportConfig->jobs_id)->first()->error;
+        # code...
     }
 
 }
