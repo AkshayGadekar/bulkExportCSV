@@ -117,6 +117,10 @@ trait Helpers {
         return $obj;
     }
 
+    public function getPublicProperties($instance) {
+        return get_object_vars($instance);
+    }
+
     public function isLastLoop($array, $index) {
         return $isLastLoop = count($array) == ($index+1);
     }

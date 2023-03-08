@@ -6,6 +6,11 @@ use App\Models\BulkExportCSV;
 
 class BulkExportCSVModel extends BulkExportCSV
 {
+    public static function findByJobsId($jobs_id)
+    {
+        return self::where("jobs_id", $jobs_id)->first();
+    }
+    
     public function getEachJobsTimeAttribute($value) {
         return $value ? unserialize($value) : [];
     }
