@@ -55,7 +55,7 @@ class BulkExport
 
             $config = $bulkExportModal->config;
 
-            if ($bulkExportModal->export_status = 'Completed') {
+            if ($bulkExportModal->export_status == 'Completed') {
                 $this->callMethod($config, $bulkExportModal, 'success');
             }
             

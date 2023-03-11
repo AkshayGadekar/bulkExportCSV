@@ -179,7 +179,7 @@ class BulkExportCSV extends Model
 `$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for an export request), records_count (total number of records exported), batch_id (batch_id of job batching), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
 
 ### bulk_export_csv table 
-When CSV gets prepared, you can access its process using "job_batches" table, but package also ships with its own table "bulk_export_csv" which has following columns:
+When CSV gets prepared, you can access its status using published "bulk_export_csv" table which has following columns:
 ```php
 [
     'jobs_id' => unique ID generated for an export request
