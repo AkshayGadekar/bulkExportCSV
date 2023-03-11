@@ -32,8 +32,8 @@ class BulkExport
         $total_jobs = (int)ceil($records_count/$records_per_job);
         $this->checkRecordsPerChunk($config);
         
-        $config->jobs_id = strtotime('now').uniqid('csv');
         $config->records_count = $records_count;
+        $config->jobs_id = strtotime('now').uniqid('csv');
 
         $bulkExportModal = $this->insertIntoBulkExportCSVTable(['jobs_id' => $config->jobs_id, 'total_records' => $records_count, 'total_jobs' => $total_jobs]);
         
@@ -55,7 +55,9 @@ class BulkExport
 
             $config = $bulkExportModal->config;
 
-            $this->callMethod($config, $bulkExportModal, 'success');
+            if ($bulkExportModal->export_status == 'Completed') {
+                $this->callMethod($config, $bulkExportModal, 'success');
+            }
             
         })->catch(function (Batch $batch, Throwable $e) use ($config) {
             // First batch job failure detected...
@@ -91,9 +93,11 @@ class BulkExport
         $bulkExportModal->batch_id = $batch->id;
         $bulkExportModal->save();
 
-        $batch->bulkExportConfig = $config;
-        
-        return $this->getPublicProperties($batch);
+        // $batch->bulkExportConfig = $config;
+        // return $this->getPublicProperties($batch);
+
+        $config->batch_id = $batch->id;
+        return $config;
         
     }
 
