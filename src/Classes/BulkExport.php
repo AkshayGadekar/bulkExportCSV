@@ -50,7 +50,7 @@ class BulkExport
         //Bus::chain($jobs)->onConnection($config->queue_connection)->onQueue($config->queue)->dispatch();
         $batch = Bus::batch([$jobs])->then(function (Batch $batch) use ($config) {
             $bulkExportModal = $this->getBulkExportModal($config->jobs_id);
-            $bulkExportModal->export_status = 'Completed';
+            !$batch->cancelledAt ?  $bulkExportModal->export_status = 'Completed' : $bulkExportModal->export_status = 'Cancelled';
             $bulkExportModal->save();
 
             $config = $bulkExportModal->config;
@@ -64,9 +64,6 @@ class BulkExport
             $bulkExportModal = $this->getBulkExportModal($config->jobs_id);
             $bulkExportModal->export_status = 'Error';
             $bulkExportModal->error = "Jobs Exception: $error.";
-            if ($batch->cancelled()) {
-                $bulkExportModal->export_status = 'Cancelled';    
-            }
             $bulkExportModal->save();
 
             if ($bulkExportModal->config) {

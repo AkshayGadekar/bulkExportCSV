@@ -201,6 +201,11 @@ trait Helpers {
         return $avg_time;
     }
 
+    public function calculateProgress($this_job_no, $total_jobs) {
+        $progress_in_percentage = ($this_job_no/$total_jobs) * 100;
+        return $progress_in_percentage;
+    }
+
     public function callMethod($config, $bulkExportModal, $status)
     {
         try {
