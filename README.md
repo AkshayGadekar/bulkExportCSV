@@ -239,11 +239,15 @@ public function toArray($request)
 Make sure to restart queue workers, if one does changes in json resource.
 
 ## Extra Methods
-Package uses `Akki\BulkExportCSV\Models\BulkExportCSVModel` model to access "bulk_export_csv" table. This model extends from published `App\Models\BulkExportCSV` model. 
+Package uses `Akki\BulkExportCSV\Models\BulkExportCSVModel` model to access "bulk_export_csv" table. This model extends from published `App\Models\BulkExportCSV` model.
+
+### findByJobsId 
 To fetch record from "bulk_export_csv" table using jobs_id, one can use `findByJobsId` method:
 ```php
 $bulkExportCSVInfo = BulkExportCSVModel::findByJobsId($jobs_id);
 ```
+
+### cancelExportCSVProcess
 To cancel ongoing export csv process, one can use `cancelExportCSVProcess` method:
 ```php
 BulkExportCSVModel::cancelExportCSVProcess($jobs_id);
