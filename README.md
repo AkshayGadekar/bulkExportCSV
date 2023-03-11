@@ -209,7 +209,7 @@ Of course, You can specify which queues queue worker should process by priority 
 By default, package takes columns names from json resource itself. But one can define custom columns as required:
 ```php
 $columns = ['Name', 'Email', 'Service Provider', 'Contact Number'];
-$bulkExportCSV = BulkExportCSV::build($query, $resource_namespace, $columns);
+$bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns);
 ```
 
 ### Access Request Data in Resource
@@ -218,7 +218,7 @@ Often times, we need authenticated user data or request data in json resource. A
 $user = auth()->user();
 $data = ['user' => $user, 'request' => $request->all()];
 $columns = []; //if columns are defined as empty, then columns will be taken from json resource itself
-$bulkExportCSV = BulkExportCSV::build($query, $resource_namespace, $columns, $data);
+$bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns, $data);
 ```
 JSON Resource:
 ```php
@@ -244,12 +244,16 @@ Package uses `Akki\BulkExportCSV\Models\BulkExportCSVModel` model to access "bul
 ### findByJobsId 
 To fetch record from "bulk_export_csv" table using jobs_id, one can use `findByJobsId` method:
 ```php
+use Akki\BulkExportCSV\Models\BulkExportCSVModel;
+
 $bulkExportCSVInfo = BulkExportCSVModel::findByJobsId($jobs_id);
 ```
 
 ### cancelExportCSVProcess
 To cancel ongoing export csv process, one can use `cancelExportCSVProcess` method:
 ```php
+use Akki\BulkExportCSV\Models\BulkExportCSVModel;
+
 BulkExportCSVModel::cancelExportCSVProcess($jobs_id);
 ```
 
