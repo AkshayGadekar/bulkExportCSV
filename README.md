@@ -69,8 +69,8 @@ $resource_namespace = 'App\Http\Resources\UserResource';
 
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace);
 ```
-`build` method returns `Illuminate\Bus\Batch` instance of job batching, one can [Inspect Batch](https://laravel.com/docs/8.x/queues#inspecting-batches).
-Also, package gives bulk export configuration used for export CSV by accessing `bulkExportConfig` on batch instance i.e. `$bulkExportCSV->bulkExportConfig`. But, Before exporting into CSV, Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below. 
+`build` method returns bulk export configuration used for export CSV, it also gives records_count (total number of records to export), jobs_id (unique ID generated for an export request) and batch_id (batch_id of job batching). Once export csv process starts, you will see its entry in `bulk_export_csv` table, that entry will continously update itself until export csv gets completed, cancelled or fails. You can use `jobs_id` to get that entry using query, and broadcast the infromation on your frontend.   
+But, Before exporting into CSV, Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below.
 
 ### Configuration
 Edit `config/bulkexportcsv.php` to suit your needs.
@@ -130,7 +130,7 @@ return [
     'queue' => 'default',
 
     /*
-    * Name of batch   
+    * Name of queue job batch   
     */
     'batch_name' => 'Bulk Export CSV',
 
@@ -176,7 +176,7 @@ class BulkExportCSV extends Model
 
 }
 ```
-`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for an export request), records_count (total records exported), batch_id (batch_id of job process), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
+`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for an export request), records_count (total number of records exported), batch_id (batch_id of job batching), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
 
 ### bulk_export_csv table 
 When CSV gets prepared, you can access its process using "job_batches" table, but package also ships with its own table "bulk_export_csv" which has following columns:
@@ -184,7 +184,7 @@ When CSV gets prepared, you can access its process using "job_batches" table, bu
 [
     'jobs_id' => unique ID generated for an export request
     'csv_name' => CSV file name
-    'total_records' => total records exported
+    'total_records' => total number of records exported
     'total_jobs' => total jobs required to export CSV
     'completed_jobs' => when export CSV starts, this column gets updated with number of completed jobs
     'progress' => the completion percentage of the CSV export
@@ -237,6 +237,18 @@ public function toArray($request)
 }
 ```
 Make sure to restart queue workers, if one does changes in json resource.
+
+### Extra Methods
+Package uses `Akki\BulkExportCSV\Models\BulkExportCSVModel` model to access "bulk_export_csv" table. This model extends from published `App\Models\BulkExportCSV` model. 
+To fetch record from "bulk_export_csv" table using jobs_id, one can use `findByJobsId` method:
+```php
+$bulkExportCSVInfo = BulkExportCSVModel::findByJobsId($jobs_id);
+```
+To cancel ongoing export csv process, one can use `cancelExportCSVProcess` method:
+```php
+BulkExportCSVModel::cancelExportCSVProcess($jobs_id);
+```
+
 
 ## Installation in LUMEN
 
