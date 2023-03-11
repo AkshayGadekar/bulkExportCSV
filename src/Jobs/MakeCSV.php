@@ -149,6 +149,7 @@ class MakeCSV implements ShouldQueue
         $this->bulkExportModal->each_jobs_time = $each_jobs_time;
 
         $this->bulkExportModal->average_jobs_time = $this->calculateAvgTime($each_jobs_time);
+        $this->bulkExportModal->progress = $this->calculateProgress($this->this_job_no, $this->bulkExportModal->total_jobs);
 
         if ($this->bulkExportModal->total_jobs == $this->this_job_no) {
             //$this->bulkExportModal->export_status = "Completed";
