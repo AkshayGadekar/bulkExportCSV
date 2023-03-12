@@ -1,6 +1,6 @@
 # Export Unlimited Records into CSV
-[![Latest Stable Version](https://img.shields.io/badge/stable-v1.2.0-blue)](https://packagist.org/packages/akki/bulkexportcsv)
-[![License](https://img.shields.io/badge/license-MIT-teal)](https://packagist.org/packages/akki/bulkexportcsv)
+<a href="https://packagist.org/packages/akki/bulkexportcsv"><img src="https://img.shields.io/packagist/v/akki/bulkexportcsv" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/akki/bulkexportcsv"><img src="https://img.shields.io/packagist/l/akki/bulkexportcsv" alt="License"></a>
 
 ## Introduction
 
