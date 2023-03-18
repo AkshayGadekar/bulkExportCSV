@@ -198,7 +198,7 @@ When CSV gets prepared, you can access its status using published "bulk_export_c
 ```
 
 ### Queue Configuration
-Make sure you have filled up `config/queue.php` correctly. Install [Supervisor](https://laravel.com/docs/8.x/queues#supervisor-configuration), in its configuration file, command must have queue name used for bulkExportCSV. For example, in `config/bulkexportcsv.php` if `queue_connection` used is `bulkExportCSV` then command must be:
+Make sure you have filled up `config/queue.php` correctly. Install [Supervisor](https://laravel.com/docs/8.x/queues#supervisor-configuration), in its configuration file, command must mention queue name used for bulkExportCSV. For example, in `config/bulkexportcsv.php` if `queue` name is `bulkExportCSV` then command must be:
 ```bash
 php artisan queue:work --queue=bulkExportCSV,default
 ```
