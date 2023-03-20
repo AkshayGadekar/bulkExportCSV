@@ -322,6 +322,10 @@ php artisan migrate
 
 Now you can follow the same [Usage](https://github.com/AkshayGadekar/bulkExportCSV#usage) mentioned for Laravel above.
 
-## Contribution
+## Tutorials
+There is video series available on youtube to know how to use this package,
+<a href="https://www.youtube.com/watch?v=NacyPrRzxeQ&list=PLlE-aom9wrdk7096yCUYh9t-ob1pY_QYp" target="_blank">Click Here</a>
 
+
+## Contribution
 You can contribute to this package by discovering bugs and opening issues. Please, add to which version of package you create pull request or issue. (e.g. [1.0.0] Fatal error on `build` method)
