@@ -322,7 +322,7 @@ php artisan migrate
 
 Now you can follow the same [Usage](https://github.com/AkshayGadekar/bulkExportCSV#usage) mentioned for Laravel above.
 
-## Tutorials
+## Learning Resource
 There is a video series available on youtube to know how to use this package,
 <a href="https://www.youtube.com/watch?v=NacyPrRzxeQ&list=PLlE-aom9wrdk7096yCUYh9t-ob1pY_QYp">Click Here</a>.
 
