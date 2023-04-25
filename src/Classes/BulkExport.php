@@ -101,6 +101,29 @@ class BulkExport
         
     }
 
+    public function stream($query, $resource_namespace, $columns=[], $data=null)
+    {
+        $clonedQuery = clone $query;
+
+        $resource = $resource_namespace;
+        $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace, $data);
+        
+        $data = $this->getAllDataFromQuery($clonedQuery);
+        $data = $this->mapDataToResource($data, $resource);
+        $data = $this->appendColumns($data, $columns);
+        
+        $csv_data = $this->makeCSVData($data);
+        $csv_name = date('Y_m_d_H_i_s_') . uniqid() . ".csv";
+
+        $headers = [
+            "Content-Type" => "text/csv"
+        ];
+
+        return response()->streamDownload(function () use ($csv_data) {
+            echo $csv_data;
+        }, $csv_name, $headers);
+    }
+
     /*
     public function buildCSV($query, $resource_namespace, $columns=[])
     {    

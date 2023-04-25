@@ -226,4 +226,9 @@ trait Helpers {
         }
     }
 
+    public function getAllDataFromQuery($query) {
+        $query = clone $query;
+        return $query->get();
+    }
+
 }
