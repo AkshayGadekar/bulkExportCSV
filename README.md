@@ -257,6 +257,13 @@ use Akki\BulkExportCSV\Models\BulkExportCSVModel;
 BulkExportCSVModel::cancelExportCSVProcess($jobs_id);
 ```
 
+## Stream CSV
+If one wants to stream download CSV directly instead of going though queue job process, then use `stream` method:
+```php
+return \BulkExportCSV::stream($query, $resource_namespace);
+```
+Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `stream` method creates CSV on the fly i.e. without writing CSV on the disk and returns downloadable CSV file to the browser.
+One can use `build` and `stream` method based on their prefer choice, if data to export is huge which one can know using `count()` method on eloquent, then better to go with `build` method otherwise `stream` method can also be right choice. 
 
 ## Installation in LUMEN
 
