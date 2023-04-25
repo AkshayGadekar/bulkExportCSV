@@ -104,6 +104,7 @@ class BulkExport
     public function stream($query, $resource_namespace, $columns=[], $data=null)
     {
         $clonedQuery = clone $query;
+        config(['bulkexportcsv.data' => $data]);
 
         $resource = $resource_namespace;
         $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace, $data);
