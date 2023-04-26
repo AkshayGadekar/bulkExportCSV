@@ -23,7 +23,7 @@ class BulkExport
 
         $db_connection = $this->getDBConnection();
         
-        $config = $this->getCongifObj();
+        $config = $this->getCongifObj($data);
         
         $columns = count($columns) ? $columns : $this->getColumns($query, $resource_namespace, $data);
         

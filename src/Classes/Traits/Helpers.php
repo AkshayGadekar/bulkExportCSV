@@ -108,8 +108,11 @@ trait Helpers {
         return $columns;
     }
 
-    public function getCongifObj() {
+    public function getCongifObj($data) {
+        $info = $data['info']??null;
+        
         $config = config('bulkexportcsv');
+        $config['info'] = $info;
         $obj = new \stdClass();
         foreach ($config as $key => $value) {
             $obj->$key = $value;
