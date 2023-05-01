@@ -35,7 +35,8 @@ class BulkExport
         $config->records_count = $records_count;
         $config->jobs_id = strtotime('now').uniqid('csv');
 
-        $bulkExportModal = $this->insertIntoBulkExportCSVTable(['jobs_id' => $config->jobs_id, 'total_records' => $records_count, 'total_jobs' => $total_jobs]);
+        $bulkExportModal = $this->insertIntoBulkExportCSVTable(['jobs_id' => $config->jobs_id, 'total_records' => $records_count, 
+        'total_jobs' => $total_jobs, "user_id" => $this->getAuthUserId()]);
         
         $query = $this->serializeEloquent($query); 
         
@@ -56,7 +57,8 @@ class BulkExport
             $config = $bulkExportModal->config;
 
             if ($bulkExportModal->export_status == 'Completed') {
-                $this->callMethod($config, $bulkExportModal, 'success');
+                //$this->callMethod($config, $bulkExportModal, 'success');
+                $this->triggerEvent("SUCCESS", $bulkExportModal);
             }
             
         })->catch(function (Batch $batch, Throwable $e) use ($config) {
@@ -68,37 +70,30 @@ class BulkExport
             $bulkExportModal->error = "Jobs Exception: $error.";
             $bulkExportModal->save();
 
-            if ($bulkExportModal->config) {
-                $config = $bulkExportModal->config;
+            $config = $bulkExportModal->config;
                 
-                if ($config->delete_csv_if_job_failed) {
-                    $csv_path = $config->csv_path;
-                    if (file_exists($csv_path)) {
-                        unlink($csv_path);
-                    }
+            if ($config->delete_csv_if_job_failed) {
+                $csv_path = $config->csv_path;
+                if ($csv_path && file_exists($csv_path)) {
+                    unlink($csv_path);
                 }
-                
-            } else {
-                $config->batch_id = $batch->id;
-                $config->csv_path = null;
             }
 
-            $this->callMethod($config, $bulkExportModal, 'fail');
+            //$this->callMethod($config, $bulkExportModal, 'fail');
+            $this->triggerEvent("FAIL", $bulkExportModal);
 
         })->finally(function (Batch $batch) {
             // The batch has finished executing...
         })->name($config->batch_name)->onConnection($config->queue_connection)->onQueue($config->queue)->dispatch();
         
-        //add batch id to bulk export table 
+        $config->csv_path = null; 
+        
+        $bulkExportModal->config = $config;
         $bulkExportModal->batch_id = $batch->id;
         $bulkExportModal->save();
-
-        // $batch->bulkExportConfig = $config;
-        // return $this->getPublicProperties($batch);
-
-        $config->batch_id = $batch->id;
-        return $config;
         
+
+        return $bulkExportModal;
     }
 
     public function stream($query, $resource_namespace, $columns=[], $data=null)

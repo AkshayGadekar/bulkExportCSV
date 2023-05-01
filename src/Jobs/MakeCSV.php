@@ -9,6 +9,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Akki\BulkExportCSV\Classes\Traits\Helpers;
+use App\Events\BulkExportCSVStarted;	
+use App\Events\BulkExportCSVJobCompleted;
 use EloquentSerialize;
 use Throwable;
 
@@ -104,7 +106,7 @@ class MakeCSV implements ShouldQueue
         
         $csv_name = $this->bulkExportModal->csv_name;
         $this->config->is_csv_exists = !!$csv_name;
-        if (!$csv_name) {
+        if (!$this->config->is_csv_exists) {
             $csv_name = $this->getCSVName();
             $data = $this->appendColumns($data, $columns);
         }
@@ -113,22 +115,32 @@ class MakeCSV implements ShouldQueue
         $csv_data = $this->makeCSVData($data);
         
         $file = $this->makeCSV($csv_data, $this->config);
+
+        if (!$this->config->is_csv_exists) {	
+            $this->triggerStartEvent();    	
+        }
     }
     
     public function getCSVName () {
         $csv_name = date('Y_m_d_H_i_s_') . uniqid() . ".csv";
-
-        $newConfig = clone $this->config;
-        unset($newConfig->this_job_no);
-        unset($newConfig->is_csv_exists);
-        $newConfig->csv_path = storage_path("$newConfig->dir/$csv_name");
-        $newConfig->batch_id = $this->batch()->id;
-
-        $this->bulkExportModal->csv_name = $csv_name;
-        $this->bulkExportModal->config = $newConfig;
-        $this->bulkExportModal->save();
-        
         return $csv_name;
+    }
+
+    public function triggerStartEvent()	
+    {	
+        $csv_name = $this->config->csv_name;	
+        	
+        $newConfig = clone $this->config;	
+        unset($newConfig->this_job_no);	
+        unset($newConfig->is_csv_exists);	
+        unset($newConfig->csv_name);	
+        $newConfig->csv_path = storage_path("$newConfig->dir/$csv_name");
+        	
+        $this->bulkExportModal->csv_name = $csv_name;	
+        $this->bulkExportModal->config = $newConfig;	
+        $this->bulkExportModal->save();	
+
+        event(new BulkExportCSVStarted($this->bulkExportModal));	
     }
 
     public function jobError($error)
@@ -162,6 +174,8 @@ class MakeCSV implements ShouldQueue
         }
 
         $this->bulkExportModal->save();
+
+        event(new BulkExportCSVJobCompleted($this->bulkExportModal));
     }
     
 }

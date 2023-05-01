@@ -13,6 +13,8 @@ use Throwable;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Schema;
+use App\Events\BulkExportCSVSucceeded;	
+use App\Events\BulkExportCSVFailed;
 
 trait Helpers {
 
@@ -109,10 +111,10 @@ trait Helpers {
     }
 
     public function getCongifObj($data) {
-        $info = $data['info']??null;
+        $csv_info = $data['csv_info']??null;
         
         $config = config('bulkexportcsv');
-        $config['info'] = $info;
+        $config['csv_info'] = $csv_info;
         $obj = new \stdClass();
         foreach ($config as $key => $value) {
             $obj->$key = $value;
@@ -136,11 +138,11 @@ trait Helpers {
         }
 
         //check if on success func is proper
-        $method_info = $config->call_on_csv_success;
-        $this->checkIfMethodIsProper($method_info);
+        // $method_info = $config->call_on_csv_success;
+        // $this->checkIfMethodIsProper($method_info);
 
-        $method_info = $config->call_on_csv_failure;
-        $this->checkIfMethodIsProper($method_info);
+        // $method_info = $config->call_on_csv_failure;
+        // $this->checkIfMethodIsProper($method_info);
         
     }
     
@@ -190,6 +192,17 @@ trait Helpers {
         return BulkExportCSVModel::create($data);
     }
 
+    public function getAuthUserId()
+    {
+        $user = auth()->user();
+        
+        $user_id = null;
+        if ($user) {
+            $user_id = $user->id;
+        }
+        return $user_id;
+    }
+
     public function getBulkExportModal($jobs_id) {
         $bulkExportModal = BulkExportCSVModel::where("jobs_id", $jobs_id)->first();
         if (!$bulkExportModal) {
@@ -225,6 +238,29 @@ trait Helpers {
             $errored = $bulkExportModal->error;
             $error = $e->getMessage();
             $bulkExportModal->error = $errored."Method Exception: $error.";
+            $bulkExportModal->save();
+        }
+    }
+
+    public function triggerEvent($event, $bulkExportModal) {
+        try {
+        
+            switch ($event) {
+                case 'SUCCESS':
+                    event(new BulkExportCSVSucceeded($bulkExportModal));
+                    break;
+                case 'FAIL':
+                    event(new BulkExportCSVFailed($bulkExportModal));
+                    break;
+                default:
+                    # code...
+                    break;
+            }
+
+        } catch (Throwable $e) {
+            $errored = $bulkExportModal->error;
+            $error = $e->getMessage();
+            $bulkExportModal->error = $errored."Event Exception: $error.";
             $bulkExportModal->save();
         }
     }

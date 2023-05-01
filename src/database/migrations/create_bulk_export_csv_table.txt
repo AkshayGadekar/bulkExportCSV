@@ -27,6 +27,7 @@ class CreateBulkExportCsvTable extends Migration
             //$table->text('each_jobs_error')->nullable();
             $table->string('error')->nullable();
             $table->text('config')->nullable();
+            $table->string('user_id')->nullable();
             $table->string('batch_id')->unique()->nullable();
             $table->timestamps();
         });
