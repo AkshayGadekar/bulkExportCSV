@@ -198,7 +198,7 @@ trait Helpers {
         
         $user_id = null;
         if ($user) {
-            $user_id = $user->id;
+            $user_id = $user->id??null;
         }
         return $user_id;
     }
