@@ -40,14 +40,14 @@ class ServiceProvider extends SupportServiceProvider
         ], 'events');
         //listeners
         $this->publishes([
-            __DIR__.'/Events/ListenBulkExportCSVStarted.txt' =>
-            app_path('Events/ListenBulkExportCSVStarted.php'),
-            __DIR__.'/Events/ListenBulkExportCSVJobCompleted.txt' =>
-            app_path('Events/ListenBulkExportCSVJobCompleted.php'),
-            __DIR__.'/Events/ListenBulkExportCSVSucceeded.txt' =>
-            app_path('Events/ListenBulkExportCSVSucceeded.php'),
-            __DIR__.'/Events/ListenBulkExportCSVFailed.txt' =>
-            app_path('Events/ListenBulkExportCSVFailed.php')
+            __DIR__.'/Listeners/ListenBulkExportCSVStarted.txt' =>
+            app_path('Listeners/ListenBulkExportCSVStarted.php'),
+            __DIR__.'/Listeners/ListenBulkExportCSVJobCompleted.txt' =>
+            app_path('Listeners/ListenBulkExportCSVJobCompleted.php'),
+            __DIR__.'/Listeners/ListenBulkExportCSVSucceeded.txt' =>
+            app_path('Listeners/ListenBulkExportCSVSucceeded.php'),
+            __DIR__.'/Listeners/ListenBulkExportCSVFailed.txt' =>
+            app_path('Listeners/ListenBulkExportCSVFailed.php')
         ], 'listeners');
 
         //$this->loadMigrationsFrom(__DIR__.'/database/migrations');
@@ -56,7 +56,7 @@ class ServiceProvider extends SupportServiceProvider
     public function register()
     {
         $this->app->register(EventServiceProvider::class);
-        
+
         $this->mergeConfigFrom(
             __DIR__.'/config/bulkexportcsv.php', 'bulkexportcsv'
         );

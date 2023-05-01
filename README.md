@@ -217,7 +217,7 @@ $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns);
 Often times, we need authenticated user data or request data in json resource. As export CSV happens in background, there is no access to request, but one can send data to json resource or even eloquent model accessors or in `call_on_csv_success`, `call_on_csv_failure` methods by using `config('bulkexportcsv.data')`:
 ```php
 $user = auth()->user();
-$data = ['user' => $user, 'request' => $request->all(), 'info' => 'Export Users'];
+$data = ['user' => $user, 'request' => $request->all(), 'csv_info' => 'Export Users'];
 $columns = []; //if columns are defined as empty, then columns will be taken from json resource itself
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns, $data);
 ```
@@ -237,7 +237,7 @@ public function toArray($request)
     ];
 }
 ```
-`info` key in data array is specifically accessible at bulkExportConfig object as `$bulkExportConfig->info`.
+`csv_info` key in data array is specifically accessible at bulkExportConfig object as `$bulkExportConfig->csv_info`.
 Make sure to restart queue workers, if one does changes in json resource.
 
 ## Extra Methods
