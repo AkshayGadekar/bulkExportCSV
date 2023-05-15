@@ -259,13 +259,13 @@ use Akki\BulkExportCSV\Models\BulkExportCSVModel;
 BulkExportCSVModel::cancelExportCSVProcess($jobs_id);
 ```
 
-## Stream CSV
-If one wants to stream download CSV directly instead of going though queue job process, then use `stream` method:
+## Download CSV
+If one wants to download CSV directly instead of going though queue job process, then use `download` method:
 ```php
-return \BulkExportCSV::stream($query, $resource_namespace);
+return \BulkExportCSV::download($query, $resource_namespace);
 ```
-Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `stream` method creates CSV on the fly i.e. without writing CSV on the disk and returns downloadable CSV file to the browser. If one is to use `stream` method only, then there is no need of any configuration.
-One can use `build` and `stream` method based on their prefer choice, if data to export is huge which one can know using `count()` method on eloquent, then better to go with `build` method otherwise `stream` method can also be right choice. 
+Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `download` method creates CSV on the fly i.e. without writing CSV on the disk and returns downloadable CSV file to the browser. In frontend side, to force browser to download CSV directly, you need to let browser call the API, you can use `location.href` for it. If one prefers to call API from AJAX then in response `download` method gives content of CSV, so in frontend one can make CSV using blob.
+If one is to use `download` method only, then there is no need of any configuration. One can use `build` and `download` method based on their prefer choice, if data to export is huge which one can know using `count()` method on eloquent, then better to go with `build` method otherwise `download` method can also be right choice. 
 
 ## Installation in LUMEN
 

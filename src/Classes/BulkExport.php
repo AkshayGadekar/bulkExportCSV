@@ -73,7 +73,8 @@ class BulkExport
             $config = $bulkExportModal->config;
                 
             if ($config->delete_csv_if_job_failed) {
-                $csv_path = $config->csv_path;
+                $csv_name = $bulkExportModal->csv_name;
+                $csv_path = storage_path("$config->dir/$csv_name");
                 if ($csv_path && file_exists($csv_path)) {
                     unlink($csv_path);
                 }
@@ -86,7 +87,7 @@ class BulkExport
             // The batch has finished executing...
         })->name($config->batch_name)->onConnection($config->queue_connection)->onQueue($config->queue)->dispatch();
         
-        $config->csv_path = null; 
+        //$config->csv_path = null; 
         
         $bulkExportModal->config = $config;
         $bulkExportModal->batch_id = $batch->id;
@@ -96,7 +97,7 @@ class BulkExport
         return $bulkExportModal;
     }
 
-    public function stream($query, $resource_namespace, $columns=[], $data=null)
+    public function download($query, $resource_namespace, $columns=[], $data=null)
     {
         $clonedQuery = clone $query;
         config(['bulkexportcsv.data' => $data]);
