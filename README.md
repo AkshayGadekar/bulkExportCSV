@@ -193,6 +193,7 @@ When CSV gets prepared, you can access its status using published "bulk_export_c
     'average_jobs_time' => average time all jobs taken
     'error' => Exception error if any job fails or 'call_on_csv_success' or 'call_on_csv_failure' methods threw exception
     'config' => bulk export configuration used for an export request
+    'user_id' => id of auth user requested export CSV
     'batch_id' => batch_id of job batching process
 ]
 ```
@@ -216,7 +217,7 @@ $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns);
 Often times, we need authenticated user data or request data in json resource. As export CSV happens in background, there is no access to request, but one can send data to json resource or even eloquent model accessors or in `call_on_csv_success`, `call_on_csv_failure` methods by using `config('bulkexportcsv.data')`:
 ```php
 $user = auth()->user();
-$data = ['user' => $user, 'request' => $request->all()];
+$data = ['user' => $user, 'request' => $request->all(), 'csv_info' => 'Export Users'];
 $columns = []; //if columns are defined as empty, then columns will be taken from json resource itself
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns, $data);
 ```
@@ -236,6 +237,7 @@ public function toArray($request)
     ];
 }
 ```
+`csv_info` key in data array is specifically accessible at bulkExportConfig object as `$bulkExportConfig->csv_info`.
 Make sure to restart queue workers, if one does changes in json resource.
 
 ## Extra Methods
@@ -257,13 +259,14 @@ use Akki\BulkExportCSV\Models\BulkExportCSVModel;
 BulkExportCSVModel::cancelExportCSVProcess($jobs_id);
 ```
 
-## Stream CSV
-If one wants to stream download CSV directly instead of going though queue job process, then use `stream` method:
+## Download CSV
+If one wants to download CSV directly instead of going though queue job process, then use `download` method:
 ```php
-return \BulkExportCSV::stream($query, $resource_namespace);
+return \BulkExportCSV::download($query, $resource_namespace);
 ```
-Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `stream` method creates CSV on the fly i.e. without writing CSV on the disk and returns downloadable CSV file to the browser.
-One can use `build` and `stream` method based on their prefer choice, if data to export is huge which one can know using `count()` method on eloquent, then better to go with `build` method otherwise `stream` method can also be right choice. 
+Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `download` method creates CSV on the fly i.e. without writing CSV on the disk and returns downloadable CSV file to the browser. In frontend side, to force browser to download CSV directly, you need to let browser call the API, you can use `location.href` for it. If one prefers to call API from AJAX then in response `download` method gives content of CSV, so in frontend one can make CSV using blob.
+
+If one is to use `download` method only, then there is no need of any configuration. One can use `build` and `download` method based on their prefer choice, if data to export is huge which one can know using `count()` method on eloquent, then better to go with `build` method otherwise `download` method can also be right choice. 
 
 ## Installation in LUMEN
 
