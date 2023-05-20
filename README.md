@@ -36,7 +36,7 @@ php artisan migrate
 ## Usage
 
 ### Make a query
-Prepare an eloquent query, make sure query does not have get(), first(), skip(), limit() methods. By Default package will export all records. 
+Prepare an eloquent query, make sure query does not have get(), first(), skip(), limit() methods. By Default package will export all records query gives. 
 ```php
 $query = \App\Models\User::query();
 $query->with('serviceProvider')->where('country', 'IN');
@@ -69,8 +69,8 @@ $resource_namespace = 'App\Http\Resources\UserResource';
 
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace);
 ```
-`build` method returns `BulkExportCSV` modal which is pointed to published `bulk_export_csv` table, it gives all information regarding CSV request.   
-But, Before exporting into CSV, Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below.
+`build` method returns `BulkExportCSV` modal which is pointed to published `bulk_export_csv` table, it gives all information regarding CSV request. If data to export is less, one can use [download](https://github.com/AkshayGadekar/bulkExportCSV/tree/develop#download-csv) method.   
+But, Before exporting into CSV using `build` method, Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below.
 
 ### Configuration
 Edit `config/bulkexportcsv.php` to suit your needs.
@@ -130,18 +130,13 @@ return [
 ```
 
 ### Events 
-When CSV starts to get prepared throught queue jobs, these are typical events that happens:
-1) CSV starts to get prepared
-2) Queue job gets completed
-3) Queue batching has completed and CSV is prepared successfully
-4) Queue batching has stopped because of exception
-To handle this each event, package publishes events and their respective listeners.
-Events:
-BulkExportCSVStarted: This event gets triggered when CSV starts to get prepared
-BulkExportCSVJobCompleted: This event gets triggered for each queue job when that particular job gets completed.
-BulkExportCSVSucceeded: This event gets triggered when CSV gets perpared successfully, i.e. queue batching has successfully completed.
-BulkExportCSVFailed: This event gets triggered when any particular queue job throws an exception and so stops queue batching process, so CSV does not get prepared successfully.    
-Each of these events gets `BulkExportCSV` modal as parameter. You can broadcast this events, we recommend using `ShouldBroadcastNow` interface so event gets broadcast in sync with queue jobs.
+When CSV starts to get prepared throught queue jobs, these are typical events that happens: CSV starts to get prepared => Queue jobs gets completed => Queue batching has completed and CSV is prepared successfully or Queue batching has stopped because of exception.
+To handle this each event, package publishes events and their respective listeners:
+1) BulkExportCSVStarted: This event gets triggered when CSV starts to get prepared
+2) BulkExportCSVJobCompleted: This event gets triggered for each queue job when that particular job gets completed.
+3) BulkExportCSVSucceeded: This event gets triggered when CSV gets perpared successfully, i.e. queue batching has successfully completed.
+4) BulkExportCSVFailed: This event gets triggered when any particular queue job throws an exception and so stops queue batching process, so CSV does not get prepared successfully.    
+Each of these events gets `BulkExportCSV` modal as a parameter. You can broadcast this events, we recommend using `ShouldBroadcastNow` interface so event gets broadcast in sync with queue jobs.
 
 ### bulk_export_csv table 
 When CSV starts to get prepared, you can access its current status using published "bulk_export_csv" table which has following columns. `BulkExportCSV` modal points this this table:
