@@ -134,7 +134,7 @@ class MakeCSV implements ShouldQueue
         unset($newConfig->this_job_no);	
         unset($newConfig->is_csv_exists);	
         unset($newConfig->csv_name);	
-        $newConfig->csv_path = storage_path("$newConfig->dir/$csv_name");
+        //$newConfig->csv_path = storage_path("$newConfig->dir/$csv_name");
         	
         $this->bulkExportModal->csv_name = $csv_name;	
         $this->bulkExportModal->config = $newConfig;	
@@ -173,9 +173,9 @@ class MakeCSV implements ShouldQueue
             // $this->bulkExportModal->config = $this->config;
         }
 
-        $this->bulkExportModal->save();
-
         event(new BulkExportCSVJobCompleted($this->bulkExportModal));
+        
+        $this->bulkExportModal->save();
     }
     
 }

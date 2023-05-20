@@ -70,7 +70,7 @@ trait Helpers {
         
         if (!$config->is_csv_exists) {
             if (!is_dir(storage_path($dir_name))) {
-                mkdir(storage_path($dir_name));
+                mkdir(storage_path($dir_name), 0777, true);
             }
         }
         
