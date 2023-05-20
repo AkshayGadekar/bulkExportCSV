@@ -14,7 +14,7 @@ return [
     /*
     * Directory where CSV will be prepared inside storage folder   
     */
-    'dir' => 'exportCSV',
+    'dir' => 'app/public/exportCSV',
 
     /*
     * Database connection for bulk_export_csv table  

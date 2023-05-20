@@ -14,7 +14,7 @@ Install **BulkExportCSV**:
 composer require akki/bulkexportcsv
 ```
 
-Publish the config file `config/bulkexportcsv.php`, model `App\Models\BulkExportCSV.php`, migration `bulk_export_csv` table, events and listeners:
+Publish the config file `config/bulkexportcsv.php`, model `App\Models\BulkExportCSV.php` and migration `bulk_export_csv` table:
 
 ```bash
 php artisan vendor:publish --provider="Akki\BulkExportCSV\ServiceProvider"
@@ -69,7 +69,7 @@ $resource_namespace = 'App\Http\Resources\UserResource';
 
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace);
 ```
-`build` method returns `BulkExportCSV` modal which is pointed to published `bulk_export_csv` table, it gives all information regarding CSV request.   
+`build` method returns bulk export configuration used for export CSV, it also gives records_count (total number of records to export), jobs_id (unique ID generated for an export request) and batch_id (batch_id of job batching). Once export csv process starts, you will see its entry in `bulk_export_csv` table, that entry will continously update itself until export csv gets completed, cancelled or fails. You can use `jobs_id` to get that entry using query, and broadcast the infromation on your frontend.   
 But, Before exporting into CSV, Make sure to fill up `config/bulkexportcsv.php` correctly which is shown below.
 
 ### Configuration
@@ -92,7 +92,27 @@ return [
     /*
     * Directory where CSV will be prepared inside storage folder   
     */
-    'dir' => 'app/public/exportCSV',
+    'dir' => 'exportCSV',
+
+    /*
+    * When CSV gets prepared successfully, mention the public method to call
+    * method will receive bulkExport configuration used at the time of export as a parameter
+    * Method given below is an examaple but it does exist at BulkExportCSV model
+    */
+    'call_on_csv_success' => [
+        'namespace' => 'App\Models\BulkExportCSV', 
+        'method' => 'handleCSV'
+    ],
+    
+    /*
+    * When CSV gets failed i.e. if any job fails, mention the public method to call
+    * method will receive bulkExport configuration used at the time of export as a parameter 
+    * Method given below is an examaple but it does exist at BulkExportCSV model
+    */
+    'call_on_csv_failure' => [
+        'namespace' => 'App\Models\BulkExportCSV', 
+        'method' => 'handleFailedCSV'
+    ],
 
     /*
     * Database connection for bulk_export_csv table  
@@ -129,25 +149,40 @@ return [
 ];
 ```
 
-### Events 
-When CSV starts to get prepared throught queue jobs, these are typical events that happens:
-1) CSV starts to get prepared
-2) Queue job gets completed
-3) Queue batching has completed and CSV is prepared successfully
-4) Queue batching has stopped because of exception
-To handle this each event, package publishes events and their respective listeners.
-Events:
-BulkExportCSVStarted: This event gets triggered when CSV starts to get prepared
-BulkExportCSVJobCompleted: This event gets triggered for each queue job when that particular job gets completed.
-BulkExportCSVSucceeded: This event gets triggered when CSV gets perpared successfully, i.e. queue batching has successfully completed.
-BulkExportCSVFailed: This event gets triggered when any particular queue job throws an exception and so stops queue batching process, so CSV does not get prepared successfully.    
-Each of these events gets `BulkExportCSV` modal as parameter. You can broadcast this events, we recommend using `ShouldBroadcastNow` interface so event gets broadcast in sync with queue jobs.
+### Method to call on CSV success or failure 
+From `config/bulkexportcsv.php`, methods mentioned at 'call_on_csv_success' and 'call_on_csv_failure' will be called. If CSV gets prepared successfully 'call_on_csv_success' method will be called, on failure 'call_on_csv_failure' will be called, Methods will receive bulk export configuration as only parameter. 
+```php
+class BulkExportCSV extends Model
+{   
+    
+    ................
+    ................
+
+
+    public function handleCSV($bulkExportConfig)
+    {
+        $csv_path = $bulkExportConfig->csv_path;
+        ................
+    }
+
+    public function handleFailedCSV($bulkExportConfig)
+    {
+        $csv_path = $bulkExportConfig->csv_path; //CSV may not exist if 'delete_csv_if_job_failed' mention in configuration is true
+        $error = \App\Models\BulkExportCSV::where('jobs_id', $bulkExportConfig->jobs_id)->first()->error;
+        //If job was failed, error will be "Jobs Exception: ......."
+        //If this method itself thrown an exception error will be "Method Exception: ......."
+        ................
+    }
+
+}
+```
+`$bulkExportConfig` in above methods has all values from `config/bulkexportcsv.php` which were used to export CSV, it also has jobs_id (unique ID generated for an export request), records_count (total number of records exported), batch_id (batch_id of job batching), csv_path (path of CSV). One then can take CSV and upload it to s3 or email it to user as per requirement.
 
 ### bulk_export_csv table 
-When CSV starts to get prepared, you can access its current status using published "bulk_export_csv" table which has following columns. `BulkExportCSV` modal points this this table:
+When CSV gets prepared, you can access its status using published "bulk_export_csv" table which has following columns:
 ```php
 [
-    'jobs_id' => unique ID generated for an export CSV request
+    'jobs_id' => unique ID generated for an export request
     'csv_name' => CSV file name
     'total_records' => total number of records exported
     'total_jobs' => total jobs required to export CSV
@@ -156,9 +191,9 @@ When CSV starts to get prepared, you can access its current status using publish
     'export_status' => export status of CSV as 'InProgress', 'Completed', 'Error' or 'Cancelled'
     'each_jobs_time' => time taken by each job processed
     'average_jobs_time' => average time all jobs taken
-    'error' => Exception error if any job fails or 'BulkExportCSVSucceeded' or 'BulkExportCSVFailed' events threw exception
-    'config' => bulk export configuration used for an export CSV request
-    'user_id' => ID of auth user requesting export CSV
+    'error' => Exception error if any job fails or 'call_on_csv_success' or 'call_on_csv_failure' methods threw exception
+    'config' => bulk export configuration used for an export request
+    'user_id' => id of auth user requested export CSV
     'batch_id' => batch_id of job batching process
 ]
 ```
@@ -168,7 +203,7 @@ Make sure you have filled up `config/queue.php` correctly. Install [Supervisor](
 ```bash
 php artisan queue:work --queue=bulkExportCSV,default
 ```
-Of course, You can specify which queues queue worker should process by priority depending on your needs. If you are broadcasting events using `ShouldBroadcast` interface make sure to add its queue name here too on which it is broadcasting.
+Of course, You can specify which queues queue worker should process by priority depending on your needs.
 
 ## More Options in 'build' method of 'BulkExportCSV' 
 ### Define Columns for Export CSV
@@ -179,7 +214,7 @@ $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns);
 ```
 
 ### Access Request Data in Resource
-Often times, we need authenticated user data or request data in json resource. As export CSV happens in background, there is no access to request, but one can send data to json resource or even eloquent model accessors or event listeners by using `config('bulkexportcsv.data')`:
+Often times, we need authenticated user data or request data in json resource. As export CSV happens in background, there is no access to request, but one can send data to json resource or even eloquent model accessors or in `call_on_csv_success`, `call_on_csv_failure` methods by using `config('bulkexportcsv.data')`:
 ```php
 $user = auth()->user();
 $data = ['user' => $user, 'request' => $request->all(), 'csv_info' => 'Export Users'];
@@ -202,7 +237,7 @@ public function toArray($request)
     ];
 }
 ```
-`csv_info` key in data array is specifically accessible on `BulkExportCSV` model as `$bulkExportModal->config->csv_info`.
+`csv_info` key in data array is specifically accessible at bulkExportConfig object as `$bulkExportConfig->csv_info`.
 Make sure to restart queue workers, if one does changes in json resource.
 
 ## Extra Methods
@@ -229,7 +264,7 @@ If one wants to download CSV directly instead of going though queue job process,
 ```php
 return \BulkExportCSV::download($query, $resource_namespace);
 ```
-Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `download` method creates CSV on the fly i.e. without writing CSV on the server disk and returns downloadable CSV file to the browser. In frontend side, to force browser to download CSV directly, you need to let browser call the API, you can use `location.href` for it. If one prefers to call API from AJAX then in response `download` method gives content of CSV, so in frontend one can make CSV using blob.
+Here, one can also pass `Columns` and `Data` parameters similar to `build` method. `download` method creates CSV on the fly i.e. without writing CSV on the disk and returns downloadable CSV file to the browser. In frontend side, to force browser to download CSV directly, you need to let browser call the API, you can use `location.href` for it. If one prefers to call API from AJAX then in response `download` method gives content of CSV, so in frontend one can make CSV using blob.
 
 If one is to use `download` method only, then there is no need of any configuration. One can use `build` and `download` method based on their prefer choice, if data to export is huge which one can know using `count()` method on eloquent, then better to go with `build` method otherwise `download` method can also be right choice. 
 
@@ -288,14 +323,6 @@ mkdir -p config
 cp vendor/akki/bulkexportcsv/src/config/bulkexportcsv.php config/bulkexportcsv.php
 cp vendor/akki/bulkexportcsv/src/Models/BulkExportCSV.txt app/Models/BulkExportCSV.php
 cp vendor/akki/bulkexportcsv/src/database/migrations/create_bulk_export_csv_table.txt database/migrations/2023_01_01_000000_create_bulk_export_csv_table.php
-cp vendor/akki/bulkexportcsv/src/Events/BulkExportCSVStarted.txt app/Events/BulkExportCSVStarted.php
-cp vendor/akki/bulkexportcsv/src/Events/BulkExportCSVJobCompleted.txt app/Events/BulkExportCSVJobCompleted.php
-cp vendor/akki/bulkexportcsv/src/Events/BulkExportCSVSucceeded.txt app/Events/BulkExportCSVSucceeded.php
-cp vendor/akki/bulkexportcsv/src/Events/BulkExportCSVFailed.txt app/Events/BulkExportCSVFailed.php
-cp vendor/akki/bulkexportcsv/src/Listeners/ListenBulkExportCSVStarted.txt app/Listeners/ListenBulkExportCSVStarted.php
-cp vendor/akki/bulkexportcsv/src/Listeners/ListenBulkExportCSVJobCompleted.txt app/Listeners/ListenBulkExportCSVJobCompleted.php
-cp vendor/akki/bulkexportcsv/src/Listeners/ListenBulkExportCSVSucceeded.txt app/Listeners/ListenBulkExportCSVSucceeded.php
-cp vendor/akki/bulkexportcsv/src/Listeners/ListenBulkExportCSVFailed.txt app/Listeners/ListenBulkExportCSVFailed.php
 ```
 
 copy `queue:table`, `queue:batches-table` from laravel itself, migrate the tables:

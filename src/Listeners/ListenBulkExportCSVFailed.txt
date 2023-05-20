@@ -27,6 +27,7 @@ class ListenBulkExportCSVFailed
     public function handle(BulkExportCSVFailed $event)
     {
         $bulkExportModal = $event->bulkExportModal;
+        $error = $bulkExportModal->error;
         //
     }
 }
