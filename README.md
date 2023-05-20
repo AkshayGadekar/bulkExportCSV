@@ -139,7 +139,7 @@ To handle this each event, package publishes events and their respective listene
 Each of these events gets `BulkExportCSV` modal as a parameter. You can broadcast this events, we recommend using `ShouldBroadcastNow` interface so event gets broadcast in sync with queue jobs.
 
 ### bulk_export_csv table 
-When CSV starts to get prepared, you can access its current status using published "bulk_export_csv" table which has following columns. `BulkExportCSV` modal points this this table:
+When CSV starts to get prepared, you can access its current status using published "bulk_export_csv" table which has following columns. `BulkExportCSV` modal points to this table:
 ```php
 [
     'jobs_id' => unique ID generated for an export CSV request
@@ -177,7 +177,7 @@ $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns);
 Often times, we need authenticated user data or request data in json resource. As export CSV happens in background, there is no access to request, but one can send data to json resource or even eloquent model accessors or event listeners by using `config('bulkexportcsv.data')`:
 ```php
 $user = auth()->user();
-$data = ['user' => $user, 'request' => $request->all(), 'csv_info' => 'Export Users'];
+$data = ['user' => $user, 'request' => $request->all(), 'csv_info' => 'Toal Users on Platform'];
 $columns = []; //if columns are defined as empty, then columns will be taken from json resource itself
 $bulkExportCSV = \BulkExportCSV::build($query, $resource_namespace, $columns, $data);
 ```
@@ -198,6 +198,7 @@ public function toArray($request)
 }
 ```
 `csv_info` key in data array is specifically accessible on `BulkExportCSV` model as `$bulkExportModal->config->csv_info`.
+
 Make sure to restart queue workers, if one does changes in json resource.
 
 ## Extra Methods
